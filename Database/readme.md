@@ -12,3 +12,5 @@ DB_PASSWORD=<See ClickUp to get the password>
 ```
 Do not commit the .env file to the repository!
 Do not add the password somewhere else in the code!
+
+https://www.datacareer.de/blog/connect-to-postgresql-with-r-a-step-by-step-example/
