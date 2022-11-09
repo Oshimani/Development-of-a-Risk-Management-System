@@ -2,61 +2,10 @@ library(dotenv)
 library(DBI)
 library(RPostgres)
 
-# load .env file
-load_dot_env(".env")
+# LOCAL IMPORTS
+source("./Database/DataPreparation.r")
+source("./Database/DatabaseController/prices.r")
 
-# GLOBAL VARIABLES
-dbPassword <- Sys.getenv("DB_PASSWORD")
-
-# FUNCTIONS
-
-# Gets db connection instance
-get_db_connection <- function() {
-  con <- dbConnect(RPostgres::Postgres(),
-                      host = "riskmanagement.jjungbluth.de",
-                      dbname = "riskmanagement",
-                      user = "riskmanagement",
-                      password = dbPassword,
-                      port = 5432)
-  return(con)
-}
-
-# Removes unwanted columns and fits the data to the database model
-clean_data_frame <- function(data_frame) {
-  # remove unused columns from data_frame
-  data_frame$Erster <- NULL
-  data_frame$Hoch <- NULL
-  data_frame$Tief <- NULL
-  data_frame$Stuecke <- NULL
-  data_frame$Volumen <- NULL
-
-  # rename column Schlusskurs to value
-  names(data_frame)[names(data_frame) == "Schlusskurs"] <- "value"
-  names(data_frame)[names(data_frame) == "Datum"] <- "date"
-
-  # convert column types
-  data_frame$date <- as.Date(data_frame$date)
-  data_frame$value <- as.numeric(data_frame$value)
-
-  return(data_frame)
-}
-
-# Add stock identifyer to data_frame
-add_stock_identifyer <- function(data_frame, stock_identifyer) {
-  data_frame$isin <- stock_identifyer
-  return(data_frame)
-}
-
-# Inserts data_frame into database
-insert_data <- function(data_frame, table_name, connection) {
-  cat(sprintf("Inserting %i rows into %s", nrow(data_frame), table_name))
-  dbWriteTable(connection, table_name, data_frame, append = TRUE)
-}
-
-# Inserts prices into database
-insert_as_price <- function(data_frame, connection) {
-  insert_data(data_frame, "t_prices", connection)
-}
 
 ### ----------- MAIN SCRIPT ------------------------------------------------
 
@@ -72,17 +21,32 @@ mercedes_benz_group_data <- clean_data_frame(mercedes_benz_group_data)
 deutsche_bank_data <- add_stock_identifyer(deutsche_bank_data, "DBK")
 mercedes_benz_group_data <- add_stock_identifyer(mercedes_benz_group_data, "MBG")
 
-
+# preview data
+print("Deutsche Bank")
 head(deutsche_bank_data)
 
-# connect to database
-con <- get_db_connection()
-
-# insert data
-# do not run multiple times without deleting data first
-insert_as_price(deutsche_bank_data, con)
-insert_as_price(mercedes_benz_group_data, con)
+print("Mercedes Benz Group")
+head(mercedes_benz_group_data)
 
 
+# database connection is being established in DatabaseController/common.r
+
+# clear prices if already present to prevent messed up data
+if (count_prices("DBK") > 0) {
+  delete_prices("DBK")
+}
+insert_as_price(deutsche_bank_data)
+
+if (count_prices("MBG") > 0) {
+  delete_prices("MBG")
+}
+insert_as_price(mercedes_benz_group_data)
+
+# count data
+deutsche_bank_in_database_count <- count_prices("DBK")
+cat(sprintf("Deutsche Bank in database: %i", deutsche_bank_in_database_count))
+
+mercedes_benz_group_in_database_count <- count_prices("MBG")
+cat(sprintf("Mercedes Benz Group in database: %i", mercedes_benz_group_in_database_count))
 
 
