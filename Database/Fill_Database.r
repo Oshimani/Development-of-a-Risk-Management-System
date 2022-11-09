@@ -48,5 +48,3 @@ cat(sprintf("Deutsche Bank in database: %i", deutsche_bank_in_database_count))
 
 mercedes_benz_group_in_database_count <- count_prices("MBG")
 cat(sprintf("Mercedes Benz Group in database: %i", mercedes_benz_group_in_database_count))
-
-
