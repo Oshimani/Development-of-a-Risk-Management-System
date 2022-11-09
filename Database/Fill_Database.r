@@ -1,11 +1,9 @@
-library(dotenv)
-library(DBI)
-library(RPostgres)
-
 # LOCAL IMPORTS
+source("./Database/DatabaseController/common.r") # ISINS are here
+
 source("./Database/DataPreparation.r")
 source("./Database/DatabaseController/prices.r")
-
+source("./DataAnalysis/common.r")
 
 ### ----------- MAIN SCRIPT ------------------------------------------------
 
@@ -17,34 +15,37 @@ mercedes_benz_group_data <- read.csv2("./data/mbg.csv", sep = ";", header = TRUE
 deutsche_bank_data <- clean_data_frame(deutsche_bank_data)
 mercedes_benz_group_data <- clean_data_frame(mercedes_benz_group_data)
 
+# add daily returns
+deutsche_bank_data <- get_logarithmic_daily_returns(deutsche_bank_data, "close")
+mercedes_benz_group_data <- get_logarithmic_daily_returns(mercedes_benz_group_data, "close")
+
 # add stock identifyer
-deutsche_bank_data <- add_stock_identifyer(deutsche_bank_data, "DE0005140008")
-mercedes_benz_group_data <- add_stock_identifyer(mercedes_benz_group_data, "DE0007100000")
+deutsche_bank_data <- add_stock_identifyer(deutsche_bank_data, DEUTSCHE_BANK_ISIN)
+mercedes_benz_group_data <- add_stock_identifyer(mercedes_benz_group_data, mercedes_benz_group_isin)
 
 # preview data
 print("Deutsche Bank")
-head(deutsche_bank_data)
+tail(deutsche_bank_data)
 
 print("Mercedes Benz Group")
-head(mercedes_benz_group_data)
-
+tail(mercedes_benz_group_data)
 
 # database connection is being established in DatabaseController/common.r
 
 # clear prices if already present to prevent messed up data
-if (count_prices("DE0005140008") > 0) {
-  delete_prices("DE0005140008")
+if (count_prices(DEUTSCHE_BANK_ISIN) > 0) {
+  delete_prices(DEUTSCHE_BANK_ISIN)
 }
 insert_as_price(deutsche_bank_data)
 
-if (count_prices("DE0007100000") > 0) {
-  delete_prices("DE0007100000")
+if (count_prices(mercedes_benz_group_isin) > 0) {
+  delete_prices(mercedes_benz_group_isin)
 }
 insert_as_price(mercedes_benz_group_data)
 
 # count data
-deutsche_bank_in_database_count <- count_prices("DE0005140008")
+deutsche_bank_in_database_count <- count_prices(DEUTSCHE_BANK_ISIN)
 cat(sprintf("Deutsche Bank in database: %i", deutsche_bank_in_database_count))
 
-mercedes_benz_group_in_database_count <- count_prices("DE0007100000")
+mercedes_benz_group_in_database_count <- count_prices(mercedes_benz_group_isin)
 cat(sprintf("Mercedes Benz Group in database: %i", mercedes_benz_group_in_database_count))

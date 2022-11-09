@@ -24,7 +24,8 @@ VALUES ('DE0007100000', 'Mercedes-Benz Group');
 -- CREATE TABLE PRICES
 CREATE TABLE t_prices (
     isin            VARCHAR(16),
-    value           NUMERIC,
+    close           NUMERIC,
+    dailyreturns     NUMERIC,
     date            DATE,
     
     FOREIGN KEY (isin) REFERENCES t_stocks(isin)

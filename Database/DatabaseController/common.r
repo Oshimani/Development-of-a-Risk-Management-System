@@ -20,6 +20,9 @@ get_connection <- function() {
 
 CONNECTION <- get_connection()
 
+DEUTSCHE_BANK_ISIN <- "DE0005140008"
+MERCEDES_BENZ_GROUP_ISIN <- "DE0007100000"
+
 # INSERT DATA FRAME INTO TABLE
 insert_data <- function(data_frame, table_name) {
   cat(sprintf("Inserting %i rows into %s", nrow(data_frame), table_name))

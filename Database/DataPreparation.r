@@ -7,13 +7,13 @@ clean_data_frame <- function(data_frame) {
   data_frame$Stuecke <- NULL
   data_frame$Volumen <- NULL
 
-  # rename column Schlusskurs to value
-  names(data_frame)[names(data_frame) == "Schlusskurs"] <- "value"
+  # rename column Schlusskurs to close
+  names(data_frame)[names(data_frame) == "Schlusskurs"] <- "close"
   names(data_frame)[names(data_frame) == "Datum"] <- "date"
 
   # convert column types
   data_frame$date <- as.Date(data_frame$date)
-  data_frame$value <- as.numeric(data_frame$value)
+  data_frame$close <- as.numeric(data_frame$close)
 
   return(data_frame)
 }
