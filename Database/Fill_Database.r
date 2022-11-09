@@ -18,8 +18,8 @@ deutsche_bank_data <- clean_data_frame(deutsche_bank_data)
 mercedes_benz_group_data <- clean_data_frame(mercedes_benz_group_data)
 
 # add stock identifyer
-deutsche_bank_data <- add_stock_identifyer(deutsche_bank_data, "DBK")
-mercedes_benz_group_data <- add_stock_identifyer(mercedes_benz_group_data, "MBG")
+deutsche_bank_data <- add_stock_identifyer(deutsche_bank_data, "DE0005140008")
+mercedes_benz_group_data <- add_stock_identifyer(mercedes_benz_group_data, "DE0007100000")
 
 # preview data
 print("Deutsche Bank")
@@ -32,19 +32,19 @@ head(mercedes_benz_group_data)
 # database connection is being established in DatabaseController/common.r
 
 # clear prices if already present to prevent messed up data
-if (count_prices("DBK") > 0) {
-  delete_prices("DBK")
+if (count_prices("DE0005140008") > 0) {
+  delete_prices("DE0005140008")
 }
 insert_as_price(deutsche_bank_data)
 
-if (count_prices("MBG") > 0) {
-  delete_prices("MBG")
+if (count_prices("DE0007100000") > 0) {
+  delete_prices("DE0007100000")
 }
 insert_as_price(mercedes_benz_group_data)
 
 # count data
-deutsche_bank_in_database_count <- count_prices("DBK")
+deutsche_bank_in_database_count <- count_prices("DE0005140008")
 cat(sprintf("Deutsche Bank in database: %i", deutsche_bank_in_database_count))
 
-mercedes_benz_group_in_database_count <- count_prices("MBG")
+mercedes_benz_group_in_database_count <- count_prices("DE0007100000")
 cat(sprintf("Mercedes Benz Group in database: %i", mercedes_benz_group_in_database_count))

@@ -1,6 +1,7 @@
 -- REMOVE ALL EXISTING DATABASES
 SELECT 'Removing existing tables...';
 DROP TABLE IF EXISTS t_stocks;
+DROP TABLE IF EXISTS t_prices;
 
 -- CREATE TABLES
 SELECT 'Creating tables...';
@@ -14,11 +15,11 @@ CREATE TABLE t_stocks (
 -- CREATE STOCKS
 -- CREATE DEUTSCHE BANK
 INSERT INTO t_stocks (isin, name)
-VALUES ('DBK', 'Deutsche Bank');
+VALUES ('DE0005140008', 'Deutsche Bank');
 
 -- CREATE MERCEDES BENZ
 INSERT INTO t_stocks (isin, name)
-VALUES ('MBG', 'Mercedes-Benz Group');
+VALUES ('DE0007100000', 'Mercedes-Benz Group');
 
 -- CREATE TABLE PRICES
 CREATE TABLE t_prices (
