@@ -21,7 +21,7 @@ mercedes_benz_group_data <- get_logarithmic_daily_returns(mercedes_benz_group_da
 
 # add stock identifyer
 deutsche_bank_data <- add_stock_identifyer(deutsche_bank_data, DEUTSCHE_BANK_ISIN)
-mercedes_benz_group_data <- add_stock_identifyer(mercedes_benz_group_data, mercedes_benz_group_isin)
+mercedes_benz_group_data <- add_stock_identifyer(mercedes_benz_group_data, MERCEDES_BENZ_GROUP_ISIN)
 
 # preview data
 print("Deutsche Bank")
@@ -38,8 +38,8 @@ if (count_prices(DEUTSCHE_BANK_ISIN) > 0) {
 }
 insert_as_price(deutsche_bank_data)
 
-if (count_prices(mercedes_benz_group_isin) > 0) {
-  delete_prices(mercedes_benz_group_isin)
+if (count_prices(MERCEDES_BENZ_GROUP_ISIN) > 0) {
+  delete_prices(MERCEDES_BENZ_GROUP_ISIN)
 }
 insert_as_price(mercedes_benz_group_data)
 
@@ -47,5 +47,5 @@ insert_as_price(mercedes_benz_group_data)
 deutsche_bank_in_database_count <- count_prices(DEUTSCHE_BANK_ISIN)
 cat(sprintf("Deutsche Bank in database: %i", deutsche_bank_in_database_count))
 
-mercedes_benz_group_in_database_count <- count_prices(mercedes_benz_group_isin)
+mercedes_benz_group_in_database_count <- count_prices(MERCEDES_BENZ_GROUP_ISIN)
 cat(sprintf("Mercedes Benz Group in database: %i", mercedes_benz_group_in_database_count))
