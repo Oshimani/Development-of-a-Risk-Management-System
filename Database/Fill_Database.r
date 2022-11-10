@@ -16,8 +16,8 @@ deutsche_bank_data <- clean_data_frame(deutsche_bank_data)
 mercedes_benz_group_data <- clean_data_frame(mercedes_benz_group_data)
 
 # add daily returns
-deutsche_bank_data <- get_logarithmic_daily_returns(deutsche_bank_data, "close")
-mercedes_benz_group_data <- get_logarithmic_daily_returns(mercedes_benz_group_data, "close")
+deutsche_bank_data <- get_continuous_daily_returns(deutsche_bank_data, "close")
+mercedes_benz_group_data <- get_continuous_daily_returns(mercedes_benz_group_data, "close")
 
 # add stock identifyer
 deutsche_bank_data <- add_stock_identifyer(deutsche_bank_data, DEUTSCHE_BANK_ISIN)

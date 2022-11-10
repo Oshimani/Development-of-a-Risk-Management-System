@@ -125,3 +125,34 @@ FROM
     v_portfolios
 WHERE
     name = 'Portfolio von Liwen';
+
+-- CREATE PORTFOLIO FOR Philipp
+INSERT INTO
+    t_portfolios (name)
+VALUES
+    ('Portfolio von Philipp');
+
+-- BUY 1000 Deutsche Bank @2021-01-01 FOR Philipp
+INSERT INTO
+    t_portfolios_stocks(portfolio_id, stock_isin, amount, date)
+VALUES
+    (
+        (
+            SELECT
+                id
+            FROM
+                t_portfolios
+            WHERE
+                name = 'Portfolio von Philipp'
+        ),
+        (
+            SELECT
+                isin
+            FROM
+                t_stocks
+            WHERE
+                name = 'Deutsche Bank'
+        ),
+        1000,
+        '2021-01-10'
+    );
