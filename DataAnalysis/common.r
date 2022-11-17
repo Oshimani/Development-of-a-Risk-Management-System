@@ -3,7 +3,7 @@
 # calculate logarithmic daily returns
 # close_column_name = the name of the column containing the closing price
 # stetige/ kontinuierliche rendite
-get_continuous_daily_returns <- function(data_frame, close_column_name) {
+get_continuous_daily_returns <- function(data_frame, close_column_name="close") {
   # make sure the data frame is sorted by date
   data_frame <- data_frame[order(data_frame$date, decreasing = TRUE), ]
   data_frame$dailyreturns <- c(-diff(log(data_frame[, close_column_name])), NA)
@@ -12,7 +12,7 @@ get_continuous_daily_returns <- function(data_frame, close_column_name) {
 }
 # get value at risk
 # TODO is this correct?
-get_value_at_risk <- function(data_frame, returns_column_name, alpha) {
+get_value_at_risk <- function(data_frame, returns_column_name="dailyreturns", alpha) {
   # sort returns by size
   data_frame_sorted <- data_frame[order(data_frame[, returns_column_name], decreasing = TRUE), ]
 
