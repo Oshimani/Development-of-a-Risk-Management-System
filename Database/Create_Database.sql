@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS t_portfolios;
 DROP TABLE IF EXISTS t_portfolios_stocks;
 
 -- REMOVE ALL EXISTING VIEWS
-DROP VIEW IF EXISTS v_portfolios;
+DROP VIEW IF EXISTS v_trades;
 
 -- CREATE TABLES
 -- CREATE TABLE STOCKS
@@ -56,7 +56,7 @@ CREATE TABLE t_portfolios_stocks (
 );
 
 -- CREATE VIEW TO FETCH PORTFOLIO WITH ITS STOCKS
-CREATE VIEW v_portfolios AS (
+CREATE VIEW v_trades AS (
     SELECT
         id,
         name,
