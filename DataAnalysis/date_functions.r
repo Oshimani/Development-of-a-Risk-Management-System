@@ -26,3 +26,13 @@ get_data_frame_subset <- function(data_frame,
 
     return(subset)
 }
+
+# get random date between start and end date
+get_random_dates <- function(start_date, end_date, n = 100) {
+    sequence <- seq(as.Date(start_date), as.Date(end_date), by = "day")
+    random_dates <- data.frame(date = sample(sequence, n, replace = FALSE))
+    random_dates_sorted <- random_dates[order(random_dates$date, decreasing = FALSE), ]
+    # sort dates
+    # random_dates <- random_dates[order(random_dates$date), ]
+    return(random_dates_sorted)
+}

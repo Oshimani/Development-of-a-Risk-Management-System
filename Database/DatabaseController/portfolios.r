@@ -69,7 +69,7 @@ get_portfolio_state_as_timeseries <- function(trades) {
 get_portfolio_as_timeseries <- function(portfolio_name) {
     # get trades from database
     trades <- get_trades_by_portfolio_name(portfolio_name)
-    print(sprintf("%s contains %i trades", portfolio_name,nrow(trades)))
+    print(sprintf("%s contains %i trades", portfolio_name, nrow(trades)))
 
     # get portfolio state over time
     portfolio_states <- get_portfolio_state_as_timeseries(trades)
@@ -78,13 +78,13 @@ get_portfolio_as_timeseries <- function(portfolio_name) {
 }
 
 # plots the portfolio states over time
-plot_portfolio_over_time <- function(portfolio_timeseries, heading="Portfolio-Entwicklung") {
+plot_portfolio_over_time <- function(portfolio_timeseries, heading = "Portfolio-Entwicklung") {
     ggplot(portfolio_timeseries, aes(x = date, y = amount, fill = isin)) +
         geom_bar(stat = "identity") +
         labs(title = heading, x = "Datum", y = "Anzahl")
 }
 
-plot_portfolio_trades_over_time <- function(trades, heading="Trades") {
+plot_portfolio_trades_over_time <- function(trades, heading = "Trades") {
     ggplot(trades, aes(x = date, y = amount, fill = isin)) +
         geom_bar(stat = "identity") +
         labs(title = heading, x = "Datum", y = "Anzahl")
@@ -103,3 +103,52 @@ plot_portfolio_trades_over_time <- function(trades, heading="Trades") {
 # EXAMPLES FOR PLOTTING FUNCTIONS
 # plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Jannick"), "Portfolio von Jannick")
 # plot_portfolio_trades_over_time(get_trades_by_portfolio_name("Portfolio von Philipp"), "Trades von Philipp")
+
+
+# THIS SECTION IS ONLY FOR GENERATION MOCK DATA
+
+create_portfolio <- function(name) {
+    query <- sprintf(
+        paste(
+            "INSERT INTO t_portfolios (name)",
+            "VALUES ('%s')"
+        ),
+        name
+    )
+    res <- dbSendQuery(CONNECTION, query)
+    dbClearResult(res)
+}
+
+delete_portfolio <- function(name) {
+    query <- sprintf(
+        "DELETE FROM t_portfolios WHERE name = '%s'",
+        name
+    )
+    res <- dbSendQuery(CONNECTION, query)
+    dbClearResult(res)
+}
+
+trade_stock <- function(type, portfolio_name, isin, amount, date) {
+    # prevent bad data
+    if (amount <= 0) {
+        return()
+    }
+
+    # using keywords to trade for better readability
+    if (type == "sell") {
+        amount <- -amount
+    }
+
+    query <- sprintf(
+        paste(
+            "INSERT INTO t_portfolios_stocks (portfolio_id, stock_isin, amount, date)",
+            "VALUES ((",
+            "SELECT id FROM t_portfolios",
+            "WHERE name = '%s'",
+            "), '%s', %i, '%s')"
+        ),
+        portfolio_name, isin, amount, date
+    )
+    res <- dbSendQuery(CONNECTION, query)
+    dbClearResult(res)
+}
