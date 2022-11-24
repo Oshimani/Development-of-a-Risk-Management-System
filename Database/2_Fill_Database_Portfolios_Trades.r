@@ -75,7 +75,7 @@ get_random_trades_in_date_period <- function(start_date,
                                              max_buy_amount = 1000,
                                              max_sell_amount = 1000) {
   # get random dates
-  random_dates <- data.frame(date = get_random_dates(start_date, end_date, amount_of_dates))
+  random_dates <- data.frame(date = get_random_trading_dates(start_date, end_date, amount_of_dates))
 
   # get random trades
   trades <- get_random_trades(
@@ -105,8 +105,8 @@ create_portfolio("High Volume Trader")
 # create trades for each portfolio
 jannicks_trades <- get_random_trades_in_date_period(
   "2021-01-01",
-  "2021-12-31",
-  100,
+  "2022-11-01",
+  50,
   list_of_isins = c(DEUTSCHE_BANK_ISIN, MERCEDES_BENZ_GROUP_ISIN),
   list_of_trade_types = c("buy", "sell"),
   buy_factor = 1,
@@ -117,8 +117,8 @@ jannicks_trades <- get_random_trades_in_date_period(
 
 liwens_trades <- get_random_trades_in_date_period(
   "2021-01-01",
-  "2021-12-31",
-  300,
+  "2022-11-01",
+  200,
   list_of_isins = c(DEUTSCHE_BANK_ISIN, MERCEDES_BENZ_GROUP_ISIN),
   list_of_trade_types = c("buy", "sell"),
   buy_factor = 1,
@@ -130,7 +130,7 @@ liwens_trades <- get_random_trades_in_date_period(
 plilipps_trades <- get_random_trades_in_date_period(
   "2021-01-01",
   "2021-12-31",
-  200,
+  100,
   list_of_isins = c(DEUTSCHE_BANK_ISIN, MERCEDES_BENZ_GROUP_ISIN),
   list_of_trade_types = c("buy", "buy", "buy", "sell"),
   buy_factor = 1,
@@ -173,8 +173,10 @@ save_trades(liwens_trades, "Portfolio von Liwen")
 save_trades(plilipps_trades, "Portfolio von Philipp")
 save_trades(high_volume_trader_trades, "High Volume Trader")
 
+
 # plot trades and portfolios
-# plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Jannick"), "Portfolio von Jannick")
+plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Jannick"), "Portfolio von Jannick")
 # plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Liwen"), "Portfolio von Liwen")
 # plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Philipp"), "Portfolio von Philipp")
 # plot_portfolio_over_time(get_portfolio_as_timeseries("High Volume Trader"), "High Volume Trader")
+

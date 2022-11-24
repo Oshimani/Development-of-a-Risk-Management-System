@@ -1,6 +1,8 @@
 library(ggplot2)
+library(tidyr)
 
 source("./Database/DatabaseController/common.r")
+source("./DataAnalysis/date_functions.r")
 
 # Get all trades from database that belong to a specific portfolio
 get_trades_by_portfolio_name <- function(portfolio_name) {
@@ -68,12 +70,49 @@ get_portfolio_state_as_timeseries <- function(trades) {
 # ---------------------------------------------------
 get_portfolio_as_timeseries <- function(portfolio_name) {
     # get trades from database
+    portfolio_name <- "Portfolio von Jannick"
     trades <- get_trades_by_portfolio_name(portfolio_name)
     print(sprintf("%s contains %i trades", portfolio_name, nrow(trades)))
 
     # get portfolio state over time
     portfolio_states <- get_portfolio_state_as_timeseries(trades)
 
+    # as portfolio_states only contains days with trading action, we need to fill the gaps
+
+    # day of first trade with this portfolio, before VaR is 0 because NAV is 0
+    first_trade_date <- min(trades$date)
+    # last day for which we have prices
+    last_valid_date <- get_last_price_date()
+    all_dates <- get_all_trading_dates_in_period(first_trade_date, last_valid_date)
+
+    # get all isins in portfolio
+    isins <- unique(trades$isin)
+
+    for (isin in isins) {
+        current_stock_df <- portfolio_states[portfolio_states$isin == isin, ]
+        # get all dates for which we have no data
+        missing_dates <- subset(all_dates, !(date %in% current_stock_df$date))
+        # append missing dates to current_stock_df
+        current_stock_df <- rbind(current_stock_df, data.frame(
+            isin = isin,
+            amount = NA,
+            date = missing_dates
+        ))
+
+        # sort by date
+        current_stock_df <- current_stock_df[order(current_stock_df$date, decreasing = FALSE), ]
+
+        # fill NA values with latest non na value
+        current_stock_df <- current_stock_df %>% fill(amount)
+
+        # remove all trades with this isin
+        portfolio_states <- portfolio_states[portfolio_states$isin != isin, ]
+        # insert full timeline for this isin
+        portfolio_states <- rbind(portfolio_states, current_stock_df)
+    }
+
+    # sort by date
+    portfolio_states <- portfolio_states[order(portfolio_states$date, decreasing = FALSE), ]
     return(portfolio_states)
 }
 
