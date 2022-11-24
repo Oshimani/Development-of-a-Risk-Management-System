@@ -1,7 +1,9 @@
 library(ggplot2)
 library(tidyr)
+library(dplyr)
 
 source("./Database/DatabaseController/common.r")
+source("./Database/DatabaseController/prices.r")
 source("./DataAnalysis/date_functions.r")
 
 # Get all trades from database that belong to a specific portfolio
@@ -83,6 +85,7 @@ get_portfolio_as_timeseries <- function(portfolio_name) {
     first_trade_date <- min(trades$date)
     # last day for which we have prices
     last_valid_date <- get_last_price_date()
+    # get all trading dates
     all_dates <- get_all_trading_dates_in_period(first_trade_date, last_valid_date)
 
     # get all isins in portfolio
@@ -129,20 +132,48 @@ plot_portfolio_trades_over_time <- function(trades, heading = "Trades") {
         labs(title = heading, x = "Datum", y = "Anzahl")
 }
 
-# TEST THESE FUNCTIONS
-# philipps_trades <- get_trades_by_portfolio_name("Portfolio von Philipp")
-# jannicks_trades <- get_trades_by_portfolio_name("Portfolio von Jannick")
-# philipps_deutsche <- get_stock_in_portfolio_at_date(philipps_trades, DEUTSCHE_BANK_ISIN, "2021-01-11")
-# jannicks_deutsche <- get_stock_in_portfolio_at_date(jannicks_trades, DEUTSCHE_BANK_ISIN, "2022-11-19")
-# get_portfolio_state_at_date(philipps_trades, "2021-01-20")
-# jannicks_pf_timeseries <- get_portfolio_state_as_timeseries(jannicks_trades)
-# plot_portfolio_over_time(jannicks_pf_timeseries)
-# get_portfolio_as_timeseries("Portfolio von Jannick")
+get_daily_returns_for_portfolio_timeseries <- function(portfolio_data_frame) {
+    # get first date
+    start_date <- min(portfolio_data_frame$date)
+    # get last date
+    end_date <- max(portfolio_data_frame$date)
 
-# EXAMPLES FOR PLOTTING FUNCTIONS
-# plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Jannick"), "Portfolio von Jannick")
-# plot_portfolio_trades_over_time(get_trades_by_portfolio_name("Portfolio von Philipp"), "Trades von Philipp")
+    # get prices for all stocks in portfolio
+    prices <- get_all_prices(start_date, end_date)
 
+    # add close price to dataframe
+    portfolio_data_frame <- merge(portfolio_data_frame, prices, by = c("isin", "date"))
+    # rename daily returns to dailyreturns_single_stock
+    names(portfolio_data_frame)[names(portfolio_data_frame) == "dailyreturns"] <- "dailyreturns_single_stock"
+    # calculate daily returns for the amount of stock owned
+    portfolio_data_frame$dailyreturns_portfolio <- portfolio_data_frame$amount *
+        portfolio_data_frame$dailyreturns_single_stock *
+        portfolio_data_frame$close
+
+    # sort by date
+    portfolio_data_frame <- portfolio_data_frame[order(portfolio_data_frame$date, decreasing = FALSE), ]
+
+    # get daily returns for portfolio
+    portfolio_daily_returns <- portfolio_data_frame %>%
+        group_by(date) %>%
+        summarize(dailyreturns_portfolio = sum(dailyreturns_portfolio))
+
+    return(portfolio_daily_returns)
+}
+
+plot_daily_returns_for_portfolio_timeseries <- function(portfolio_data_frame, heading = "Tagesrenditen") {
+    # get daily returns
+    portfolio_data_frame <- get_daily_returns_for_portfolio_timeseries(portfolio_data_frame)
+
+    # plot daily returns
+    # use green when daily return is positive, red when negative
+    ggplot(portfolio_data_frame, aes(x = date, y = dailyreturns_portfolio)) +
+        geom_bar(stat = "identity", fill = ifelse(portfolio_data_frame$dailyreturns_portfolio > 0, "#009b00", "#e20000")) +
+        labs(title = heading, x = "Datum", y = "Tagesrendite")
+}
+
+get_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
+plot_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
 
 # THIS SECTION IS ONLY FOR GENERATION MOCK DATA
 

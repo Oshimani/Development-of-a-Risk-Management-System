@@ -23,6 +23,21 @@ get_prices <- function(start_date, end_date, isin) {
   return(prices)
 }
 
+get_all_prices <- function(start_date, end_date) {
+  query <- sprintf(
+    paste(
+      "SELECT * FROM t_prices",
+      "WHERE date >= '%s'",
+      "AND date <= '%s'",
+      "ORDER BY date DESC"
+    ),
+    start_date, end_date
+  )
+  prices <- dbGetQuery(CONNECTION, query)
+
+  return(prices)
+}
+
 count_prices <- function(isin) {
   query <- sprintf(
     paste(
