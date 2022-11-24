@@ -8,11 +8,11 @@ source("./DataAnalysis/date_functions.r")
 
 # observation period
 end_date <- as.Date("2022-01-01")
-duration <- 100
+duration <- 365
 start_date <- subtract_days(end_date, duration)
 
-alpha <- 0.01
-var_observation_period <- 20
+alpha <- 0.05
+var_observation_period <- 100
 
 # also fetch enough data to calculate the first few days of var
 historical_data_start_date <- subtract_days(start_date, var_observation_period)
@@ -47,6 +47,9 @@ get_value_at_risk_for_target_date <- function(data_frame,
 deutsche_bank_data$var <- apply(deutsche_bank_data, 1, function(x) {
     get_value_at_risk_for_target_date(deutsche_bank_data, getElement(x, "date"), var_observation_period, alpha = alpha)
 })
+
+# limit to observation period
+deutsche_bank_data <- get_data_frame_subset(deutsche_bank_data, start_date, end_date, "date")
 
 
 
