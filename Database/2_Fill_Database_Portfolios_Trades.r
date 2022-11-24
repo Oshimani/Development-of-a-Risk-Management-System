@@ -94,11 +94,13 @@ get_random_trades_in_date_period <- function(start_date,
 delete_portfolio("Portfolio von Jannick")
 delete_portfolio("Portfolio von Liwen")
 delete_portfolio("Portfolio von Philipp")
+delete_portfolio("High Volume Trader")
 
 # create new portfolios
 create_portfolio("Portfolio von Jannick")
 create_portfolio("Portfolio von Liwen")
 create_portfolio("Portfolio von Philipp")
+create_portfolio("High Volume Trader")
 
 # create trades for each portfolio
 jannicks_trades <- get_random_trades_in_date_period(
@@ -137,6 +139,18 @@ plilipps_trades <- get_random_trades_in_date_period(
   max_sell_amount = 1000
 )
 
+high_volume_trader_trades <- get_random_trades_in_date_period(
+  "2021-01-01",
+  "2021-12-31",
+  365,
+  list_of_isins = c(DEUTSCHE_BANK_ISIN, MERCEDES_BENZ_GROUP_ISIN),
+  list_of_trade_types = c("buy", "sell"),
+  buy_factor = 1,
+  sell_factor = 0.5,
+  max_buy_amount = 1000,
+  max_sell_amount = 1000
+)
+
 # save trades in database
 save_trades <- function(trades, portfolio_name) {
   # iterate over trades
@@ -157,8 +171,10 @@ save_trades <- function(trades, portfolio_name) {
 save_trades(jannicks_trades, "Portfolio von Jannick")
 save_trades(liwens_trades, "Portfolio von Liwen")
 save_trades(plilipps_trades, "Portfolio von Philipp")
+save_trades(high_volume_trader_trades, "High Volume Trader")
 
 # plot trades and portfolios
-plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Jannick"), "Portfolio von Jannick")
-plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Liwen"), "Portfolio von Liwen")
-plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Philipp"), "Portfolio von Philipp")
+# plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Jannick"), "Portfolio von Jannick")
+# plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Liwen"), "Portfolio von Liwen")
+# plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Philipp"), "Portfolio von Philipp")
+# plot_portfolio_over_time(get_portfolio_as_timeseries("High Volume Trader"), "High Volume Trader")
