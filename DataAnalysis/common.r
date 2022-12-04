@@ -10,27 +10,4 @@ get_continuous_daily_returns <- function(data_frame, close_column_name="close") 
 
   return(data_frame)
 }
-# get value at risk
-# TODO is this correct?
-get_value_at_risk <- function(data_frame, returns_column_name="dailyreturns", alpha) {
-  # sort returns by size
-  data_frame_sorted <- data_frame[order(data_frame[, returns_column_name], decreasing = TRUE), ]
 
-  value_at_risk <- quantile(data_frame_sorted[, returns_column_name], alpha)
-
-  return(value_at_risk)
-}
-
-get_statistisch_daily_returns <- function(data_frame, close_column_name) {
-  # make sure the data frame is sorted by date
-  data_frame <- data_frame[order(data_frame$date, decreasing = TRUE), ]
-  data_frame$Returns <- c(diff(-data_frame$close), NA)
-  data_frame$dailyreturns <- data_frame$Returns / data_frame$close
-  # Reorder by return
-  data_frame$sorted <- data_frame[order(data_frame$dailyreturns), ]
-  return(data_frame$sorted)
-}
-get_value_at_risk_statistisch <- function(data_frame, returns_column_name, alpha) {
-  VaR <- quantile(data_frame$dailyreturns, alpha)
-  return(VaR)
-}

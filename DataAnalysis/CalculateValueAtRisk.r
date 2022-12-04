@@ -1,34 +1,28 @@
 # LOCAL IMPORTS
 source("./Database/DatabaseController/prices.r")
+source("./Database/DatabaseController/portfolios.r")
 source("./DataAnalysis/common.r")
+source("./DataAnalysis/date_functions.r")
+source("./DataAnalysis/value_at_risk.r")
 
 # CONSTANTS
 # OBSERVATION PERIOD
-start_date <- "2020-12-11"
-end_date <- "2020-12-31"
+end_date <- as.Date("2022-01-01")
+duration <- 365
+start_date <- subtract_days(end_date, duration)
 
 alpha <- 0.01
+var_observation_period <- 250
 
-# GET PRICES FROM DATABASE
-deutsche_bank_data <- get_prices(start_date, end_date, DEUTSCHE_BANK_ISIN)
-mercedes_benz_group_data <- get_prices(start_date, end_date, MERCEDES_BENZ_GROUP_ISIN)
+# also fetch enough data to calculate the first few days of var
+historical_data_start_date <- get_required_start_date(start_date, var_observation_period)
+historical_data_end_date <- as.Date(end_date)
 
+portfolio <- get_portfolio("Portfolio von Jannick")
 
-# CALCULATE VALUE AT RISK
-deutsche_bank_value_at_risk <- get_value_at_risk(deutsche_bank_data, "dailyreturns", alpha)
-deutsche_bank_value_at_risk
+portfolio$date <- as.Date(portfolio$date)
 
-mercedes_benz_group_value_at_risk <- get_value_at_risk(mercedes_benz_group_data, "dailyreturns", alpha)
-mercedes_benz_group_value_at_risk
-
-deutsche_bank_value_at_risk <- get_statistisch_daily_returns(deutsche_bank_data, "dailyreturns")
-deutsche_bank_value_at_risk
-
-deutsche_bank_value_at_risk_statistisch <- get_value_at_risk_statistisch(deutsche_bank_data, "dailyreturns", alpha)
-deutsche_bank_value_at_risk_statistisch
-
-mercedes_benz_group_value_at_risk <- get_statistisch_daily_returns(mercedes_benz_group_data, "dailyreturns")
-mercedes_benz_group_value_at_risk
-
-mercedes_benz_group_value_at_risk_statistisch <- get_value_at_risk_statistisch(mercedes_benz_group_data, "dailyreturns", alpha)
-mercedes_benz_group_value_at_risk_statistisch
+# backtesting
+ portfolio_backtested <- calculate_var_for_data_frame(portfolio,
+                                                      observation_period = var_observation_period,
+                                                      alpha = alpha)

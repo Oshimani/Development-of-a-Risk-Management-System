@@ -3,79 +3,101 @@ library(ggplot2)
 
 # LOCAL IMPORTS
 source("./Database/DatabaseController/prices.r")
-source("./DataAnalysis/common.r")
 source("./DataAnalysis/date_functions.r")
 
-# observation period
-end_date <- as.Date("2022-01-01")
-duration <- 365
-start_date <- subtract_days(end_date, duration)
+# get value at risk
+get_value_at_risk <- function(data_frame, returns_column_name = "dailyreturns", alpha) {
+    # sort returns by size
+    data_frame_sorted <- data_frame[order(data_frame[, returns_column_name], decreasing = TRUE), ]
 
-alpha <- 0.05
-var_observation_period <- 100
+    value_at_risk <- quantile(data_frame_sorted[, returns_column_name], alpha)
 
-# also fetch enough data to calculate the first few days of var
-historical_data_start_date <- subtract_days(start_date, var_observation_period)
-historical_data_end_date <- as.Date(end_date)
-
-# get prices from database
-deutsche_bank_data <- get_prices(
-    historical_data_start_date,
-    historical_data_end_date,
-    DEUTSCHE_BANK_ISIN
-)
+    return(value_at_risk)
+}
 
 # calculate value at risk for each day
 get_value_at_risk_for_target_date <- function(data_frame,
                                               target_date,
-                                              observation_period,
+                                              observation_period = 250,
                                               date_column_name = "date",
                                               returns_column_name = "dailyreturns",
-                                              alpha) {
+                                              alpha = 0.01) {
+    target_date <- as.Date(target_date)
     start_date <- subtract_days(target_date, observation_period + 1)
     end_date <- subtract_days(target_date, 1)
 
     # get subset of dataframe to calculate value at risk
-    subset <- get_data_frame_subset(data_frame, start_date, end_date, "date")
+    subset <- get_data_frame_subset(data_frame,
+        start_date,
+        end_date,
+        date_column_name = date_column_name
+    )
     var <- get_value_at_risk(subset, returns_column_name, alpha)
-    # print value at risk
-    print(paste("var:", var))
     return(var)
 }
 
+# backtesting function -> calculates VaR for each day
+# data frame has to expand 250 days before the first day of the backtesting period
+calculate_var_for_data_frame <- function(data_frame,
+                                         observation_period = 250,
+                                         date_column_name = "date",
+                                         returns_column_name = "dailyreturns",
+                                         alpha = 0.01) {
+    # calculate value at risk for each day
+    data_frame$var <- apply(data_frame, 1, function(x) {
+        get_value_at_risk_for_target_date(data_frame,
+            getElement(x, date_column_name),
+            observation_period,
+            date_column_name = date_column_name,
+            returns_column_name = returns_column_name,
+            alpha = alpha
+        )
+    })
 
-deutsche_bank_data$var <- apply(deutsche_bank_data, 1, function(x) {
-    get_value_at_risk_for_target_date(deutsche_bank_data, getElement(x, "date"), var_observation_period, alpha = alpha)
-})
+    # trim bad data from the beginning of the data frame
+    # data is bad because the calculation assumes that the daily returns of the first 250 days are 0
+    # you can only use this data past the 250th day
+    actual_data_frame <- get_data_frame_subset(data_frame, start_date, end_date, date_column_name)
 
-# limit to observation period
-deutsche_bank_data <- get_data_frame_subset(deutsche_bank_data, start_date, end_date, "date")
+    return(actual_data_frame)
+}
 
+get_overshoots <- function(data_frame,
+                           returns_column_name = "dailyreturns",
+                           var_column_name = "var") {
+    # get all overshoots
+    overshoots <- data_frame[data_frame[[returns_column_name]] < data_frame[[var_column_name]], ]
+    return(overshoots)
+}
 
+plot_overshoots <- function(data_frame,
+                            returns_column_name = "dailyreturns",
+                            var_column_name = "var",
+                            title = "Overshoots") {
+    # plot returns together with value at risk
+    ggplot(data_frame, aes(x = date)) +
+        geom_point(aes(y = returns_column_name), color = "blue", size = 3) +
+        geom_line(aes(y = var_column_name), color = "red", size = 1) +
+        labs(
+            title = title,
+            x = "Date",
+            y = "Daily Returns"
+        )
+}
 
-# calculate value at risk for each day in data frame by observation period and add to data frame
-# deutsche_bank_data <- deutsche_bank_data %>%
-#     mutate(
-#         var = get_value_at_risk_for_target_date(
-#             deutsche_bank_data,
-#             date,
-#             var_observation_period,
-#             "date",
-#             "dailyreturns",
-#             alpha
-#         )
-#     )
-
-# get all overshoots
-overshoots <- deutsche_bank_data[deutsche_bank_data$dailyreturns < deutsche_bank_data$var, ]
-print(overshoots)
-
-# plot returns together with value at risk
-ggplot(deutsche_bank_data, aes(x = date)) +
-    geom_point(aes(y = dailyreturns), color = "blue", size = 3) +
-    geom_line(aes(y = var), color = "red", size = 1) +
-    labs(
-        title = "Value at Risk for Deutsche Bank",
-        x = "Date",
-        y = "Returns"
+# LIMIT TESTING
+test_var_limit_by_holding_period <- function(data_frame,
+                                             target_date,
+                                             observation_period = 250,
+                                             date_column_name = "date",
+                                             returns_column_name = "dailyreturns",
+                                             alpha = 0.01,
+                                             holding_period = 20) {
+    var <- get_value_at_risk_for_target_date(data_frame,
+        target_date,
+        observation_period,
+        alpha = alpha
     )
+    var_after_holding_period <- var * sqrt(holding_period)
+    return(var_after_holding_period)
+}

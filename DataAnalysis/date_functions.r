@@ -1,3 +1,4 @@
+library("dplyr")
 source("./Database/DatabaseController/common.r")
 
 # subtract days from date
@@ -25,7 +26,6 @@ get_data_frame_subset <- function(data_frame,
         data_frame[, date_column_name] >= start_date &
             data_frame[, date_column_name] <= end_date,
     ]
-
     return(subset)
 }
 
@@ -67,4 +67,11 @@ get_last_price_date <- function() {
     )
     date <- dbGetQuery(CONNECTION, query)
     return(as.Date(date[[1]][[1]]))
+}
+
+# VaR calculation requires data from the last 250 trading days before the first target date
+get_required_start_date <- function(start_date, observation_period = 250) {
+    # we need enough data to calculate the first few days of var correctly
+    historical_data_start_date <- subtract_days(start_date, observation_period)
+    return(historical_data_start_date)
 }

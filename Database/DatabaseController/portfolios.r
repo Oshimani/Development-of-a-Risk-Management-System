@@ -68,8 +68,8 @@ get_portfolio_state_as_timeseries <- function(trades) {
     return(portfolio_states_df)
 }
 
-# THIS IS THE MAIN FUNCTION TO BE USED FROM THIS FILE
-# ---------------------------------------------------
+# gets the portfolio states over time
+# includes all trading days
 get_portfolio_as_timeseries <- function(portfolio_name) {
     # get trades from database
     portfolio_name <- "Portfolio von Jannick"
@@ -132,12 +132,13 @@ plot_portfolio_trades_over_time <- function(trades, heading = "Trades") {
         labs(title = heading, x = "Datum", y = "Anzahl")
 }
 
-get_daily_returns_for_portfolio_timeseries <- function(portfolio_data_frame) {
+# gets the portfolio value and returns
+# includes all trading days
+get_daily_returns_and_value_for_portfolio_timeseries <- function(portfolio_data_frame) {
     # get first date
     start_date <- min(portfolio_data_frame$date)
     # get last date
     end_date <- max(portfolio_data_frame$date)
-
     # get prices for all stocks in portfolio
     prices <- get_all_prices(start_date, end_date)
 
@@ -146,24 +147,35 @@ get_daily_returns_for_portfolio_timeseries <- function(portfolio_data_frame) {
     # rename daily returns to dailyreturns_single_stock
     names(portfolio_data_frame)[names(portfolio_data_frame) == "dailyreturns"] <- "dailyreturns_single_stock"
     # calculate daily returns for the amount of stock owned
-    portfolio_data_frame$dailyreturns_portfolio <- portfolio_data_frame$amount *
+    portfolio_data_frame$dailyreturns_portfolio_abs <- portfolio_data_frame$amount *
         portfolio_data_frame$dailyreturns_single_stock *
         portfolio_data_frame$close
+    # get position value
+    portfolio_data_frame$position_value <- portfolio_data_frame$amount * portfolio_data_frame$close
 
     # sort by date
     portfolio_data_frame <- portfolio_data_frame[order(portfolio_data_frame$date, decreasing = FALSE), ]
 
-    # get daily returns for portfolio
+    # get daily returns and total value for portfolio
     portfolio_daily_returns <- portfolio_data_frame %>%
         group_by(date) %>%
-        summarize(dailyreturns_portfolio = sum(dailyreturns_portfolio))
+        summarize(
+            dailyreturns_portfolio_abs = sum(dailyreturns_portfolio_abs),
+            position_value = sum(position_value)
+        )
 
+    # rename position_value to total_value
+    names(portfolio_daily_returns)[names(portfolio_daily_returns) == "position_value"] <- "total_value"
+
+    # calculate relative daily returns
+    portfolio_daily_returns$dailyreturns_portfolio <- portfolio_daily_returns$dailyreturns_portfolio_abs /
+        portfolio_daily_returns$total_value
     return(portfolio_daily_returns)
 }
 
 plot_daily_returns_for_portfolio_timeseries <- function(portfolio_data_frame, heading = "Tagesrenditen") {
     # get daily returns
-    portfolio_data_frame <- get_daily_returns_for_portfolio_timeseries(portfolio_data_frame)
+    portfolio_data_frame <- get_daily_returns_and_value_for_portfolio_timeseries(portfolio_data_frame)
 
     # plot daily returns
     # use green when daily return is positive, red when negative
@@ -172,8 +184,27 @@ plot_daily_returns_for_portfolio_timeseries <- function(portfolio_data_frame, he
         labs(title = heading, x = "Datum", y = "Tagesrendite")
 }
 
-get_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
-plot_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
+# #################################################
+# THE MAIN FUNCTION TO BE USED OUTSIDE OF THIS FILE
+# returns portfolio value and daily returns
+# includes all trading days
+# starts at portfolio creation date (first trade)
+# ends at last known trading day
+get_portfolio <- function(portfolio_name) {
+    pf_ts <- get_portfolio_as_timeseries(portfolio_name)
+    pf <- get_daily_returns_and_value_for_portfolio_timeseries(pf_ts)
+
+    # rename dailyreturns_portfolio to dailyreturns
+    names(pf)[names(pf) == "dailyreturns_portfolio"] <- "dailyreturns"
+    #rename dailyreturns_portfolio_abs to dailyreturns_abs
+    names(pf)[names(pf) == "dailyreturns_portfolio_abs"] <- "dailyreturns_abs"
+
+    return(pf)
+}
+
+# ts <- get_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
+# plot_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
+
 
 # THIS SECTION IS ONLY FOR GENERATION MOCK DATA
 
