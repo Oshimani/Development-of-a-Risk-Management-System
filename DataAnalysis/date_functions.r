@@ -8,6 +8,12 @@ subtract_days <- function(date, days) {
     return(date)
 }
 
+add_days <- function(date, days) {
+    date <- as.Date(date)
+    date <- date + days
+    return(date)
+}
+
 # get dates from start_date to end_date
 get_dates <- function(start_date, end_date) {
     dates <- seq(as.Date(start_date), as.Date(end_date), by = "day")

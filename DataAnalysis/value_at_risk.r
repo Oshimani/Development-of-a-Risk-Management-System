@@ -9,7 +9,6 @@ source("./DataAnalysis/date_functions.r")
 get_value_at_risk <- function(data_frame, returns_column_name = "dailyreturns", alpha) {
     # sort returns by size
     data_frame_sorted <- data_frame[order(data_frame[, returns_column_name], decreasing = TRUE), ]
-
     value_at_risk <- quantile(data_frame_sorted[, returns_column_name], alpha)
 
     return(value_at_risk)
@@ -32,6 +31,16 @@ get_value_at_risk_for_target_date <- function(data_frame,
         end_date,
         date_column_name = date_column_name
     )
+
+    threshold_date <- min(data_frame[[date_column_name]])
+    threshold_date <- add_days(threshold_date, observation_period)
+
+    if (target_date < threshold_date) {
+        # print("No data for this date")
+        return(NA)
+    }
+
+    # calculate value at risk
     var <- get_value_at_risk(subset, returns_column_name, alpha)
     return(var)
 }
@@ -57,9 +66,10 @@ calculate_var_for_data_frame <- function(data_frame,
     # trim bad data from the beginning of the data frame
     # data is bad because the calculation assumes that the daily returns of the first 250 days are 0
     # you can only use this data past the 250th day
-    actual_data_frame <- get_data_frame_subset(data_frame, start_date, end_date, date_column_name)
 
-    return(actual_data_frame)
+    # remove all rows where the value at risk is NA
+    data_frame <- data_frame[!is.na(data_frame$var), ]
+    return(data_frame)
 }
 
 get_overshoots <- function(data_frame,
@@ -76,8 +86,8 @@ plot_overshoots <- function(data_frame,
                             title = "Overshoots") {
     # plot returns together with value at risk
     ggplot(data_frame, aes(x = date)) +
-        geom_point(aes(y = returns_column_name), color = "blue", size = 3) +
-        geom_line(aes(y = var_column_name), color = "red", size = 1) +
+        geom_point(aes(y = data_frame[, returns_column_name]), color = "blue", size = 3) +
+        geom_line(aes(y = data_frame[, var_column_name]), color = "red", size = 1) +
         labs(
             title = title,
             x = "Date",
@@ -86,6 +96,7 @@ plot_overshoots <- function(data_frame,
 }
 
 # LIMIT TESTING
+# TODO New Algorithm
 test_var_limit_by_holding_period <- function(data_frame,
                                              target_date,
                                              observation_period = 250,
