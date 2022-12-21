@@ -162,7 +162,8 @@ get_daily_returns_and_value_for_portfolio_timeseries <- function(portfolio_data_
         summarize(
             dailyreturns_portfolio_abs = sum(dailyreturns_portfolio_abs),
             position_value = sum(position_value)
-        )
+        ) %>%
+        ungroup()
 
     # rename position_value to total_value
     names(portfolio_daily_returns)[names(portfolio_daily_returns) == "position_value"] <- "total_value"
@@ -170,6 +171,7 @@ get_daily_returns_and_value_for_portfolio_timeseries <- function(portfolio_data_
     # calculate relative daily returns
     portfolio_daily_returns$dailyreturns_portfolio <- portfolio_daily_returns$dailyreturns_portfolio_abs /
         portfolio_daily_returns$total_value
+
     return(portfolio_daily_returns)
 }
 
@@ -196,10 +198,10 @@ get_portfolio <- function(portfolio_name) {
 
     # rename dailyreturns_portfolio to dailyreturns
     names(pf)[names(pf) == "dailyreturns_portfolio"] <- "dailyreturns"
-    #rename dailyreturns_portfolio_abs to dailyreturns_abs
+    # rename dailyreturns_portfolio_abs to dailyreturns_abs
     names(pf)[names(pf) == "dailyreturns_portfolio_abs"] <- "dailyreturns_abs"
 
-    return(pf)
+    return(data.frame(pf))
 }
 
 # ts <- get_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
