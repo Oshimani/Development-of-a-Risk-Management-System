@@ -1,0 +1,54 @@
+# LOCAL IMPORTS
+source("./Database/DatabaseController/prices.r")
+source("./Database/DatabaseController/portfolios.r")
+source("./DataAnalysis/common.r")
+source("./DataAnalysis/date_functions.r")
+source("./DataAnalysis/value_at_risk.r")
+
+# DAILY VAR CALCULATION ----------------------
+# CONSTANTS
+alpha <- 0.01
+var_observation_period <- 250
+# target date
+target_date <- as.Date("2022-11-07")
+
+# portfolio weights at target date (usually today)
+# pf_weights <- get_portfolio_weights_at_target_date("Portfolio von Jannick", target_date)
+# pf_weights$close <- NULL
+# pf_weights$dailyreturns <- NULL
+# pf_weights$value <- NULL
+# pf_weights$amount <- NULL
+# pf_weights$date <- NULL
+
+# manual weights input
+pf_weights <- data.frame(
+    isin = c("DE0005140008", "DE0007100000"),
+    weight = c(0.5, 0.5)
+)
+# get prices
+start_date <- subtract_days(target_date, var_observation_period)
+prices <- get_all_prices(start_date, target_date)
+
+df <- merge(prices, pf_weights, by = "isin")
+
+df_returns <- df %>%
+    group_by(date) %>%
+    summarise(
+        dailyreturns = sum(dailyreturns * weight)
+    ) %>%
+    ungroup()
+df_returns <- data.frame(df_returns)
+
+# calculate value at risk
+var <- get_value_at_risk(df_returns, "dailyreturns", alpha)
+print(var)
+
+var_limit <- test_var_limit_by_holding_period(df_returns,
+    target_date = target_date,
+    observation_period = var_observation_period,
+    date_column_name = "date",
+    returns_column_name = "dailyreturns",
+    alpha = alpha,
+    holding_period = 20
+)
+print(var_limit)

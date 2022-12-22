@@ -59,13 +59,20 @@ CREATE TABLE t_portfolios_stocks (
 CREATE VIEW v_trades AS (
     SELECT
         id,
-        name,
+        t_portfolios.name,
         stock_isin AS isin,
         amount,
-        date
+        t_portfolios_stocks.date AS date,
+        close,
+        dailyreturns
     FROM
-        t_portfolios AS t_p,
-        t_portfolios_stocks AS t_ps
+        t_portfolios,
+        t_portfolios_stocks,
+        t_stocks,
+        t_prices
     WHERE
-        t_p.id = t_ps.portfolio_id
+        t_portfolios.id = t_portfolios_stocks.portfolio_id
+        AND t_portfolios_stocks.stock_isin = t_stocks.isin
+        AND t_stocks.isin = t_prices.isin
+        AND t_portfolios_stocks.date = t_prices.date
 );

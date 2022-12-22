@@ -5,25 +5,21 @@ source("./DataAnalysis/common.r")
 source("./DataAnalysis/date_functions.r")
 source("./DataAnalysis/value_at_risk.r")
 
+# BACKTESTING --------------------------------
 # CONSTANTS
-# OBSERVATION PERIOD
-# end_date <- as.Date("2022-01-01")
-# duration <- 365
-# start_date <- subtract_days(end_date, duration)
-
 alpha <- 0.01
 var_observation_period <- 250
 
-# # also fetch enough data to calculate the first few days of var
-# historical_data_start_date <- get_required_start_date(start_date, var_observation_period)
-# historical_data_end_date <- as.Date(end_date)
-
+# get portfolio -> this contains data of the complete lifespan of the portfolio
 portfolio <- get_portfolio("Portfolio von Jannick")
 
-# backtesting
+# backtesting -> calculate VaR where possible (250 days buffer required)
 portfolio_backtested <- calculate_var_for_data_frame(portfolio,
     observation_period = var_observation_period,
     alpha = alpha
 )
 
+# plot overshoots
 plot_overshoots(portfolio_backtested, returns_column_name = "dailyreturns", var_column_name = "var", title = "Overshoots von \"Portfolio von Jannick\"")
+
+

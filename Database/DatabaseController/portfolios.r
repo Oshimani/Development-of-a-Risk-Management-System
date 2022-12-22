@@ -74,7 +74,7 @@ get_portfolio_as_timeseries <- function(portfolio_name) {
     # get trades from database
     portfolio_name <- "Portfolio von Jannick"
     trades <- get_trades_by_portfolio_name(portfolio_name)
-    print(sprintf("%s contains %i trades", portfolio_name, nrow(trades)))
+    # print(sprintf("%s contains %i trades", portfolio_name, nrow(trades)))
 
     # get portfolio state over time
     portfolio_states <- get_portfolio_state_as_timeseries(trades)
@@ -204,10 +204,46 @@ get_portfolio <- function(portfolio_name) {
     return(data.frame(pf))
 }
 
-# ts <- get_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
-# plot_daily_returns_for_portfolio_timeseries(get_portfolio_as_timeseries("Portfolio von Jannick"))
+# get amounts of stock held at target date
+get_portfolio_weights_at_target_date <- function(portfolio_name, target_date) {
+    print(target_date)
+    pf <- get_trades_by_portfolio_name(portfolio_name)
+    # get only trades before target date
+    pf <- pf[pf$date <= target_date, ]
 
+    # sum trades by isin
+    pf_weights <- pf %>%
+        group_by(isin) %>%
+        summarize(
+            amount = sum(amount)
+        ) %>%
+        ungroup()
 
+    pf_weights <- data.frame(pf_weights)
+
+    # add date
+    pf_weights$date <- target_date
+
+    # fetch prices for target date
+    prices <- get_all_prices(target_date, target_date)
+
+    # merge both tables
+    pf_weights <- merge(pf_weights, prices, by = "isin")
+    # rename date.x to date
+    names(pf_weights)[names(pf_weights) == "date.x"] <- "date"
+    # remove date.y
+    pf_weights$date.y <- NULL
+
+    # calculate value of stocks
+    pf_weights$value <- pf_weights$amount * pf_weights$close
+
+    # calculate weight of stocks
+    pf_weights$weight <- pf_weights$value / sum(pf_weights$value)
+
+    return(pf_weights)
+}
+
+# #################################################
 # THIS SECTION IS ONLY FOR GENERATION MOCK DATA
 
 create_portfolio <- function(name) {
