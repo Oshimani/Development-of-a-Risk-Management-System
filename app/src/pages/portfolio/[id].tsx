@@ -1,10 +1,12 @@
-import { GetServerSideProps, type NextPage } from "next";
+import { type GetServerSideProps, type NextPage } from "next";
 import Head from "next/head";
 import { prisma } from "../../server/db/client";
-import type { t_backtesting_results, t_portfolios, t_var_limit_results } from "@prisma/client";
-import { Box, Button, ButtonGroup, Card, Grid, Stack, Typography, useTheme } from "@mui/material";
+import type { t_backtesting_results, t_portfolios, t_stocks, t_var_limit_results } from "@prisma/client";
+import { Box, Card, Grid, IconButton, Stack, TextField, Typography, useTheme } from "@mui/material";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import {
     Chart as ChartJS,
     LinearScale,
@@ -17,12 +19,12 @@ import {
     LineController,
     BarController,
     ChartData,
-    Tick,
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
 
 import 'chartjs-adapter-date-fns'
 import { enUS } from 'date-fns/locale'
+import { DatePicker } from "@mui/x-date-pickers";
 
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -56,12 +58,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         date: data.date.toISOString()
     }))
 
+    // available stocks
+    const availableStocks = await prisma.t_stocks.findMany({})
 
     return ({
         props: {
             portfolio,
             varLimit,
-            backtestingData: backtestingDataFormatted
+            backtestingData: backtestingDataFormatted,
+            availableStocks
         }
     })
 }
@@ -81,11 +86,14 @@ ChartJS.register(
     BarController
 );
 
-
-const Portfolio: NextPage<{ portfolio: t_portfolios, varLimit: IVarLimitResult, backtestingData: IBacktestingData[] }> = (props) => {
+const Portfolio: NextPage<{
+    portfolio: t_portfolios,
+    varLimit: IVarLimitResult,
+    backtestingData: IBacktestingData[],
+    availableStocks: t_stocks[]
+}> = (props) => {
 
     const theme = useTheme()
-    console.log(props.backtestingData)
 
     const data: ChartData = {
         labels: props.backtestingData.map((data) => new Date(data.date)),
@@ -97,7 +105,8 @@ const Portfolio: NextPage<{ portfolio: t_portfolios, varLimit: IVarLimitResult, 
                 fill: false,
                 borderColor: theme.palette.error.main,
                 backgroundColor: theme.palette.error.main,
-                radius: 0
+                radius: 1,
+                hoverRadius: 6
             },
             {
                 label: "Returns",
@@ -105,10 +114,12 @@ const Portfolio: NextPage<{ portfolio: t_portfolios, varLimit: IVarLimitResult, 
                 pointBorderColor: theme.palette.primary.main,
                 pointBackgroundColor: theme.palette.primary.main,
                 type: "scatter",
-                pointRadius: 1
+                pointRadius: 2,
+                pointHoverRadius: 6
             }
         ]
     }
+
 
     return (
         <>
@@ -118,15 +129,21 @@ const Portfolio: NextPage<{ portfolio: t_portfolios, varLimit: IVarLimitResult, 
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <Grid container spacing={8}>
+            <Grid container spacing={4} alignItems="stretch">
                 <Grid item xs={12}>
                     <Typography variant="h4">{props.portfolio.name}</Typography>
                 </Grid>
+
                 {/* GRAPH */}
-                <Grid item lg={8}>
-                    <Card>
+                <Grid item md={8}>
+                    <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
+                        <Typography sx={{
+                            borderBottom: "solid",
+                            borderBottomColor: theme.palette.primary.main,
+                            borderBottomWidth: 3,
+                            marginBottom: 2
+                        }} variant="h2">Backtesting</Typography>
                         <Chart options={{
-                            responsive: true,
                             indexAxis: "x",
                             scales: {
                                 x: {
@@ -136,11 +153,10 @@ const Portfolio: NextPage<{ portfolio: t_portfolios, varLimit: IVarLimitResult, 
                                             locale: enUS
                                         }
                                     }
-
                                 },
                                 y: {
                                     ticks: {
-                                        callback: (tickValue: string | number, index: number, ticks: Tick[]) => ((Number(tickValue)*100).toFixed(2) + "%")
+                                        callback: (tickValue: string | number) => ((Number(tickValue) * 100).toFixed(2) + "%")
                                     }
                                 }
                             }
@@ -149,32 +165,77 @@ const Portfolio: NextPage<{ portfolio: t_portfolios, varLimit: IVarLimitResult, 
                 </Grid>
 
                 {/* LIMIT INDICATOR */}
-                <Grid item lg={4}>
-                    <Stack direction="row" spacing={1}>
-                        <Typography variant="body1">NAV:</Typography>
-                        <Typography variant="body1" fontWeight={"bold"}>X.XXX.XXX,YY€</Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={1}>
-                        <Typography variant="body1">VaR (20d):</Typography>
-                        <Typography variant="body1" fontWeight={"bold"}>{(Math.abs(props.varLimit.value) * 100).toFixed(2)}%</Typography>
-                    </Stack>
+                <Grid item md={4}>
+                    <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
+                        <Typography sx={{
+                            borderBottom: "solid",
+                            borderBottomColor: theme.palette.primary.main,
+                            borderBottomWidth: 3,
+                            marginBottom: 2
+                        }} variant="h2">Info</Typography>
+                        <Stack direction="row" spacing={1}>
+                            <Typography variant="body1">NAV:</Typography>
+                            <Typography variant="body1" fontWeight={"bold"}>X.XXX.XXX,YY€</Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={1}>
+                            <Typography variant="body1">V@R (20d):</Typography>
+                            <Typography variant="body1" fontWeight={"bold"}>{(Math.abs(props.varLimit.value) * 100).toFixed(2)}%</Typography>
+                        </Stack>
 
-                    <Box sx={{ fontSize: theme.typography.h1.fontSize, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        {Math.abs(props.varLimit.value) > 0.2 ?
-                            <>
-                                <ErrorOutlineIcon fontSize="inherit" color="error" />
-                                <Typography fontWeight="bold" sx={{ color: theme.palette.error.main }}>Violation!</Typography>
-                                <Typography sx={{ color: theme.palette.error.main }}>VaR for next 20 days is greater than 20%</Typography>
-                            </>
-                            :
-                            <>
-                                <CheckCircleOutlineIcon fontSize="inherit" color="success" />
-                                <Typography fontWeight="bold" sx={{ color: theme.palette.success.main }}>No Violation!</Typography>
+                        <Box sx={{ fontSize: theme.typography.h1.fontSize, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            {Math.abs(props.varLimit.value) > 0.2 ?
+                                <>
+                                    <ErrorOutlineIcon fontSize="inherit" color="error" />
+                                    <Typography fontWeight="bold" sx={{ color: theme.palette.error.main }}>Violation!</Typography>
+                                    <Typography sx={{ color: theme.palette.error.main }}>VaR for next 20 days is greater than 20%</Typography>
+                                </>
+                                :
+                                <>
+                                    <CheckCircleOutlineIcon fontSize="inherit" color="success" />
+                                    <Typography fontWeight="bold" sx={{ color: theme.palette.success.main }}>No Violation!</Typography>
 
-                            </>
+                                </>
 
-                        }
-                    </Box>
+                            }
+                        </Box>
+
+                        <Stack direction="row" spacing={1}>
+                            <Typography variant="body1">Overshoots:</Typography>
+                            <Typography variant="body1" fontWeight={"bold"}>{props.backtestingData.filter(data => data.dailyreturns < data.value).length}</Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={1}>
+                            <Typography variant="body1">V@R (1d):</Typography>
+                            <Typography variant="body1" fontWeight={"bold"}>{(Math.abs(props.varLimit.value / Math.sqrt(20)) * 100).toFixed(2)}%</Typography>
+                        </Stack>
+                    </Card>
+                </Grid>
+
+                {/* TRADE BOOKING */}
+                <Grid item xs={12}>
+                    <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
+                        <Typography sx={{
+                            borderBottom: "solid",
+                            borderBottomColor: theme.palette.primary.main,
+                            borderBottomWidth: 3,
+                            marginBottom: 2
+                        }} variant="h2">Book Trades</Typography>
+                        <Stack direction="column" spacing={2}>
+                            {props.availableStocks.map(stock => (
+                                <Stack key={stock.isin} direction="row" alignItems="center" spacing={1}>
+                                    <Typography sx={{ flexGrow: 1 }} variant="body1" title={stock.isin}>{stock.name}</Typography>
+                                    <TextField sx={{}} size="small" type="number" label="Amount" variant="standard" />
+                                    <DatePicker label="Date" renderInput={(params) => <TextField {...params} size="small" variant="standard" />} value={null} onChange={() => null} />
+                                    <IconButton color="success" size="small">
+                                        <AddIcon />
+                                    </IconButton>
+                                    <IconButton color="error" size="small">
+                                        <RemoveIcon />
+                                    </IconButton>
+                                </Stack>
+                            ))
+                            }
+                        </Stack>
+                    </Card>
                 </Grid>
             </Grid>
         </>
