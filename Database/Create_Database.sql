@@ -9,6 +9,8 @@ DROP TABLE IF EXISTS t_portfolios_stocks;
 
 DROP TABLE IF EXISTS t_backtesting_results;
 
+DROP TABLE IF EXISTS t_var_limit_results;
+
 -- REMOVE ALL EXISTING VIEWS
 DROP VIEW IF EXISTS v_trades;
 
@@ -59,18 +61,21 @@ CREATE TABLE t_portfolios_stocks (
 
 -- CREATE TABLE BACKTESTING_RESULTS
 CREATE TABLE t_backtesting_results (
-    id INTEGER NOT NULL,
+    id SERIAL PRIMARY KEY,
+    portfolio_id INTEGER NOT NULL,
     value NUMERIC NOT NULL,
+    dailyreturns NUMERIC NOT NULL,
     date DATE NOT NULL,
-    FOREIGN KEY (id) REFERENCES t_portfolios(id) ON DELETE CASCADE
+    FOREIGN KEY (portfolio_id) REFERENCES t_portfolios(id) ON DELETE CASCADE
 );
 
 -- CREATE TABLE VAR_LIMIT_RESULTS
 CREATE TABLE t_var_limit_results (
-    id INTEGER NOT NULL,
+    id SERIAL PRIMARY KEY,
+    portfolio_id INTEGER NOT NULL,
     value NUMERIC NOT NULL,
     date DATE NOT NULL,
-    FOREIGN KEY (id) REFERENCES t_portfolios(id) ON DELETE CASCADE
+    FOREIGN KEY (portfolio_id) REFERENCES t_portfolios(id) ON DELETE CASCADE
 );
 
 -- CREATE VIEW TO FETCH PORTFOLIO WITH ITS STOCKS

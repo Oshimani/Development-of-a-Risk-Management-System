@@ -10,7 +10,7 @@ private_get_var_results <- function(table_name, portfolio_name) {
     query <- sprintf(
         paste(
             "SELECT * FROM %s",
-            "WHERE id = (",
+            "WHERE portfolio_id = (",
             "SELECT id FROM t_portfolios",
             "WHERE name = '%s'",
             ")"
@@ -25,7 +25,7 @@ private_get_var_results_by_date_and_pf_name <- function(table_name, portfolio_na
     query <- sprintf(
         paste(
             "SELECT * FROM %s",
-            "WHERE id = (",
+            "WHERE portfolio_id = (",
             "SELECT id FROM t_portfolios",
             "WHERE name = '%s'",
             ")",
@@ -48,7 +48,7 @@ private_save_var_result <- function(table_name, portfolio_name, value, date) {
             paste(
                 "UPDATE %s",
                 "SET value = %f",
-                "WHERE id = (",
+                "WHERE portfolio_id = (",
                 "SELECT id FROM t_portfolios",
                 "WHERE name = '%s'",
                 ")",
@@ -60,7 +60,7 @@ private_save_var_result <- function(table_name, portfolio_name, value, date) {
         # insert new backtesting result
         query <- sprintf(
             paste(
-                "INSERT INTO %s (id, value, date)",
+                "INSERT INTO %s (portfolio_id, value, date)",
                 "VALUES (",
                 "(SELECT id FROM t_portfolios WHERE name = '%s'), %f, '%s'",
                 ")"
@@ -87,16 +87,48 @@ get_backtesting_results_by_date_and_pf_name <- function(portfolio_name, date) {
 }
 
 # save backtesting var results
-save_backtesting_result <- function(portfolio_name, value, date) {
-    private_save_var_result("t_backtesting_results", portfolio_name, value, date)
+save_backtesting_result <- function(portfolio_name, value, dailyreturns, date) {
+    # check if result already exists
+    result <- private_get_var_results_by_date_and_pf_name("t_backtesting_results", portfolio_name, date)
+
+    query <- ""
+    if (nrow(result) > 0) {
+        # update existing backtesting result
+        query <- sprintf(
+            paste(
+                "UPDATE t_backtesting_results",
+                "SET value = %f,",
+                "dailyreturns = %f",
+                "WHERE portfolio_id = (",
+                "SELECT id FROM t_portfolios",
+                "WHERE name = '%s'",
+                ")",
+                "AND date = '%s'"
+            ),
+            value, dailyreturns, portfolio_name, date
+        )
+    } else {
+        # insert new backtesting result
+        query <- sprintf(
+            paste(
+                "INSERT INTO t_backtesting_results (portfolio_id, value, dailyreturns, date)",
+                "VALUES (",
+                "(SELECT id FROM t_portfolios WHERE name = '%s'), %f, %f, '%s'",
+                ")"
+            ),
+            portfolio_name, value, dailyreturns, date
+        )
+    }
+    res <- dbSendQuery(CONNECTION, query)
+    dbClearResult(res)
 }
 
 
 save_backtesting_results <- function(portfolio_name, data_frame) {
     for (i in seq_len(nrow(data_frame))) {
         result <- data_frame[i, ]
-        print(paste("Saving backtesting result for: \"", portfolio_name, "\" on ", result$date, " with value: ", result$value))
-        save_backtesting_result(portfolio_name, result$var, result$date)
+        print(paste("Saving backtesting result for: \"", portfolio_name, "\" on ", result$date, " with value: ", result$var))
+        save_backtesting_result(portfolio_name, result$var, result$dailyreturns, result$date)
     }
     print("Done saving backtesting results")
 }
@@ -123,7 +155,7 @@ save_var_limit_result <- function(portfolio_name, value, date) {
 save_var_limit_results <- function(portfolio_name, data_frame) {
     for (i in seq_len(nrow(data_frame))) {
         result <- data_frame[i, ]
-        print(paste("Saving var limit result for: \"", portfolio_name, "\" on ", result$date, " with value: ", result$value))
+        print(paste("Saving var limit result for: \"", portfolio_name, "\" on ", result$date, " with value: ", result$var))
         save_var_limit_result(portfolio_name, result$var, result$date)
     }
     print("Done saving var limit results")
