@@ -173,21 +173,35 @@ const Portfolio: NextPage<{
                             borderBottomWidth: 3,
                             marginBottom: 2
                         }} variant="h2">Info</Typography>
+
+                        {/* NAV */}
                         <Stack direction="row" spacing={1}>
                             <Typography variant="body1">NAV:</Typography>
                             <Typography variant="body1" fontWeight={"bold"}>X.XXX.XXX,YY€</Typography>
+                        </Stack>
+
+                        {/* OVERSHOOTS */}
+                        <Stack direction="row" spacing={1}>
+                            <Typography variant="body1">Overshoots:</Typography>
+                            <Typography variant="body1" fontWeight={"bold"}>{props.backtestingData.filter(data => data.dailyreturns < data.value).length}</Typography>
+                        </Stack>
+
+                        {/* VALUE AT RISK */}
+                        <Stack direction="row" spacing={1} sx={{ marginTop: 4 }}>
+                            <Typography variant="body1">V@R (1d):</Typography>
+                            <Typography variant="body1" fontWeight={"bold"}>{(Math.abs(props.varLimit.value / Math.sqrt(20)) * 100).toFixed(2)}%</Typography>
                         </Stack>
                         <Stack direction="row" spacing={1}>
                             <Typography variant="body1">V@R (20d):</Typography>
                             <Typography variant="body1" fontWeight={"bold"}>{(Math.abs(props.varLimit.value) * 100).toFixed(2)}%</Typography>
                         </Stack>
 
-                        <Box sx={{ fontSize: theme.typography.h1.fontSize, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                        <Box sx={{ marginTop: 4, fontSize: theme.typography.h1.fontSize, display: "flex", flexDirection: "column", alignItems: "center" }}>
                             {Math.abs(props.varLimit.value) > 0.2 ?
                                 <>
                                     <ErrorOutlineIcon fontSize="inherit" color="error" />
                                     <Typography fontWeight="bold" sx={{ color: theme.palette.error.main }}>Violation!</Typography>
-                                    <Typography sx={{ color: theme.palette.error.main }}>VaR for next 20 days is greater than 20%</Typography>
+                                    <Typography sx={{ color: theme.palette.error.main, textAlign: "center" }}>VaR for next 20 days is greater than 20%!</Typography>
                                 </>
                                 :
                                 <>
@@ -199,14 +213,7 @@ const Portfolio: NextPage<{
                             }
                         </Box>
 
-                        <Stack direction="row" spacing={1}>
-                            <Typography variant="body1">Overshoots:</Typography>
-                            <Typography variant="body1" fontWeight={"bold"}>{props.backtestingData.filter(data => data.dailyreturns < data.value).length}</Typography>
-                        </Stack>
-                        <Stack direction="row" spacing={1}>
-                            <Typography variant="body1">V@R (1d):</Typography>
-                            <Typography variant="body1" fontWeight={"bold"}>{(Math.abs(props.varLimit.value / Math.sqrt(20)) * 100).toFixed(2)}%</Typography>
-                        </Stack>
+
                     </Card>
                 </Grid>
 
