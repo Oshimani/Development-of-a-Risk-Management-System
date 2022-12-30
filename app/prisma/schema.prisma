@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model t_backtesting_results {
+  id           Int          @id @default(autoincrement())
+  portfolio_id Int
+  value        Decimal      @db.Decimal
+  dailyreturns Decimal      @db.Decimal
+  date         DateTime     @db.Date
+  t_portfolios t_portfolios @relation(fields: [portfolio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model t_portfolios {
+  id                    Int                     @id @default(autoincrement())
+  name                  String                  @db.VarChar
+  t_backtesting_results t_backtesting_results[]
+  t_portfolios_stocks   t_portfolios_stocks[]   @ignore
+  t_var_limit_results   t_var_limit_results[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model t_portfolios_stocks {
+  portfolio_id Int
+  stock_isin   String       @db.VarChar(16)
+  amount       Decimal      @db.Decimal
+  date         DateTime     @db.Date
+  t_portfolios t_portfolios @relation(fields: [portfolio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  t_stocks     t_stocks     @relation(fields: [stock_isin], references: [isin], onDelete: NoAction, onUpdate: NoAction)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model t_prices {
+  isin         String?   @db.VarChar(16)
+  close        Decimal?  @db.Decimal
+  dailyreturns Decimal?  @db.Decimal
+  date         DateTime? @db.Date
+  t_stocks     t_stocks? @relation(fields: [isin], references: [isin], onDelete: NoAction, onUpdate: NoAction)
+
+  @@ignore
+}
+
+model t_stocks {
+  isin                String                @id @db.VarChar(16)
+  name                String                @db.VarChar(255)
+  t_portfolios_stocks t_portfolios_stocks[] @ignore
+  t_prices            t_prices[]            @ignore
+}
+
+model t_var_limit_results {
+  id           Int          @id @default(autoincrement())
+  portfolio_id Int
+  value        Decimal      @db.Decimal
+  date         DateTime     @db.Date
+  t_portfolios t_portfolios @relation(fields: [portfolio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
