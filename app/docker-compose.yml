@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  sunshineserver:
+    container_name: riskmanagement-app
+    build: ./
+    ports:
+      - "20091:3000"
+    restart: unless-stopped
