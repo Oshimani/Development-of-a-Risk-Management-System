@@ -5,7 +5,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY prisma ./
-COPY .env
+COPY .env ./
 
 COPY package.json package-lock.json ./
 RUN npm install --frozen-lockfile
