@@ -5,6 +5,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from "@mui/x-date-pickers";
 
 import '../styles/global.css'
+import Link from "next/link";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const theme = createTheme({
@@ -28,16 +29,23 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Container>
-          <Stack spacing={4} direction="row" justifyContent={"center"}>
-            <Stack spacing={1} direction="column" alignItems="center">
-              <InsightsIcon color="primary" sx={{ fontSize: theme.typography.h1.fontSize }} />
-              <Typography variant="h1">Risky Business</Typography>
-              <Typography variant="h3"
-                color={theme.palette.primary.main}
-                fontWeight={theme.typography.fontWeightLight}>Riskmanagement suit</Typography>
-            </Stack>
+
+          {/* HEADER */}
+          <Stack spacing={4} mb={8} direction="row" justifyContent={"center"}>
+            <Link title="Back to Home" style={{ color: "inherit", textDecoration: "none" }} href="/">
+              <Stack spacing={1} direction="column" alignItems="center">
+                <InsightsIcon color="primary" sx={{ fontSize: theme.typography.h1.fontSize }} />
+                <Typography sx={{ textDecoration: "none" }}
+                  // color={theme.palette.common.black}
+                  variant="h1">Risky Business</Typography>
+                <Typography variant="h3"
+                  color={theme.palette.primary.main}
+                  fontWeight={theme.typography.fontWeightLight}>Riskmanagement suit</Typography>
+              </Stack>
+            </Link>
           </Stack>
 
+          {/* CONTENT */}
           <Component {...pageProps} />
 
         </Container>

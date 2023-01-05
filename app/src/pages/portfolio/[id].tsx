@@ -1,12 +1,13 @@
-import { type GetServerSideProps, type NextPage } from "next";
-import Head from "next/head";
-import { prisma } from "../../server/db/client";
-import type { t_backtesting_results, t_portfolios, t_stocks, t_var_limit_results } from "@prisma/client";
-import { Box, Card, Grid, IconButton, Stack, TextField, Typography, useTheme } from "@mui/material";
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+import { type GetServerSideProps, type NextPage } from "next"
+import Head from "next/head"
+import { prisma } from "../../server/db/client"
+import type { t_backtesting_results, t_portfolios, t_stocks, t_var_limit_results } from "@prisma/client"
+import { Box, Card, Grid, IconButton, Stack, TextField, Typography, useTheme } from "@mui/material"
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import AddIcon from '@mui/icons-material/Add'
+import RemoveIcon from '@mui/icons-material/Remove'
+import CloseIcon from '@mui/icons-material/Close'
 import {
     Chart as ChartJS,
     LinearScale,
@@ -19,13 +20,15 @@ import {
     LineController,
     BarController,
     ChartData,
-} from 'chart.js';
-import { Chart } from 'react-chartjs-2';
+} from 'chart.js'
+import { Chart } from 'react-chartjs-2'
 
 import 'chartjs-adapter-date-fns'
 import { enUS } from 'date-fns/locale'
 import { DatePicker } from "@mui/x-date-pickers";
 
+import { createAvatar } from '@dicebear/avatars'
+import * as style from '@dicebear/avatars-bottts-sprites'
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     // portfolio
@@ -130,8 +133,15 @@ const Portfolio: NextPage<{
             </Head>
 
             <Grid container spacing={4} alignItems="stretch">
-                <Grid item xs={12}>
-                    <Typography variant="h4">{props.portfolio.name}</Typography>
+                <Grid item xs={12} sx={{ display: "flex", flexDirection: "row", alignItems: "end", gap: 1 }}>
+                    <div style={{ height: 60, width: 60 }}
+                        dangerouslySetInnerHTML={{ __html: createAvatar(style, { seed: props.portfolio.name }) }}></div>
+                    <Typography variant="h4" flexGrow={1}>{props.portfolio.name}</Typography>
+
+                    {/* BACK BUTTON */}
+                    <IconButton title="Back to Home" href="/">
+                        <CloseIcon color="error" fontSize="large" />
+                    </IconButton>
                 </Grid>
 
                 {/* GRAPH */}

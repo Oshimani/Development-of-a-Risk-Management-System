@@ -72,7 +72,6 @@ get_portfolio_state_as_timeseries <- function(trades) {
 # includes all trading days
 get_portfolio_as_timeseries <- function(portfolio_name) {
     # get trades from database
-    portfolio_name <- "Portfolio von Jannick"
     trades <- get_trades_by_portfolio_name(portfolio_name)
     # print(sprintf("%s contains %i trades", portfolio_name, nrow(trades)))
 
