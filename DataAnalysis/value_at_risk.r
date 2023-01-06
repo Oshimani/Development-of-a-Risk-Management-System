@@ -96,7 +96,6 @@ plot_overshoots <- function(data_frame,
 }
 
 # LIMIT TESTING
-# TODO New Algorithm
 test_var_limit_by_holding_period <- function(data_frame,
                                              target_date,
                                              observation_period = 250,
