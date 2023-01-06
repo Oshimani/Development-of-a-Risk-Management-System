@@ -13,7 +13,8 @@ portfolios <- c(
     "Portfolio von Liwen",
     "Portfolio von Philipp",
     "Mercedes Benz",
-    "Deutsche Bank"
+    "Deutsche Bank",
+    "Philipps Testportfolio"
 )
 
 alpha <- 0.01
