@@ -205,7 +205,6 @@ get_portfolio <- function(portfolio_name) {
 
 # get amounts of stock held at target date
 get_portfolio_weights_at_target_date <- function(portfolio_name, target_date) {
-    print(target_date)
     pf <- get_trades_by_portfolio_name(portfolio_name)
     # get only trades before target date
     pf <- pf[pf$date <= target_date, ]

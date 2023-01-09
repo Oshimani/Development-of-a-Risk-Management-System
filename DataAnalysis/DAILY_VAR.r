@@ -13,7 +13,8 @@ portfolios <- c(
     "Portfolio von Liwen",
     "Portfolio von Philipp",
     "Mercedes Benz",
-    "Deutsche Bank"
+    "Deutsche Bank",
+    "Philipps Testportfolio"
 )
 
 alpha <- 0.01
@@ -33,7 +34,7 @@ for (portfolio_name in portfolios) {
     # manual weights input
     # pf_weights <- data.frame(
     #     isin = c("DE0005140008", "DE0007100000"),
-    #     weight = c(0.5, 0.5)
+    #     weight = c(0.7, 0.3)
     # )
 
     # get prices
@@ -50,10 +51,7 @@ for (portfolio_name in portfolios) {
         ungroup()
     df_returns <- data.frame(df_returns)
 
-    # calculate value at risk
-    var <- get_value_at_risk(df_returns, "dailyreturns", alpha)
-    print(var)
-
+    # calculate var after 20 days 
     var_limit <- test_var_limit_by_holding_period(df_returns,
         target_date = target_date,
         observation_period = var_observation_period,

@@ -96,6 +96,7 @@ delete_portfolio("Portfolio von Liwen")
 delete_portfolio("Portfolio von Philipp")
 delete_portfolio("Mercedes Benz")
 delete_portfolio("Deutsche Bank")
+delete_portfolio("Philipps Testportfolio")
 
 # create new portfolios
 create_portfolio("Portfolio von Jannick")
@@ -103,6 +104,7 @@ create_portfolio("Portfolio von Liwen")
 create_portfolio("Portfolio von Philipp")
 create_portfolio("Mercedes Benz")
 create_portfolio("Deutsche Bank")
+create_portfolio("Philipps Testportfolio")
 
 # create trades for each portfolio
 jannicks_trades <- get_random_trades_in_date_period(
@@ -165,6 +167,18 @@ deutsche_bank_trades <- get_random_trades_in_date_period(
   max_sell_amount = 1000
 )
 
+plilipps_trades_testportfolio <- get_random_trades_in_date_period(
+  "2021-01-01",
+  "2022-10-31",
+  10,
+  list_of_isins = c(DEUTSCHE_BANK_ISIN, MERCEDES_BENZ_GROUP_ISIN),
+  list_of_trade_types = c("buy", "sell"),
+  buy_factor = 2,
+  sell_factor = 1,
+  max_buy_amount = 10000,
+  max_sell_amount = 10000
+)
+
 # save trades in database
 save_trades <- function(trades, portfolio_name) {
   # iterate over trades
@@ -187,11 +201,13 @@ save_trades(liwens_trades, "Portfolio von Liwen")
 save_trades(plilipps_trades, "Portfolio von Philipp")
 save_trades(mercedes_trades, "Mercedes Benz")
 save_trades(deutsche_bank_trades, "Deutsche Bank")
+save_trades(plilipps_trades_testportfolio, "Philipps Testportfolio")
 
 
 # plot trades and portfolios
 # plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Jannick"), "Portfolio von Jannick")
 # plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Liwen"), "Portfolio von Liwen")
 # plot_portfolio_over_time(get_portfolio_as_timeseries("Portfolio von Philipp"), "Portfolio von Philipp")
-plot_portfolio_over_time(get_portfolio_as_timeseries("Mercedes Benz"), "Portfolio von Mercedes Benz")
-plot_portfolio_over_time(get_portfolio_as_timeseries("Deutsche Bank"), "Portfolio von Deutsche Bank")
+# plot_portfolio_over_time(get_portfolio_as_timeseries("Mercedes Benz"), "Portfolio von Mercedes Benz")
+# plot_portfolio_over_time(get_portfolio_as_timeseries("Deutsche Bank"), "Portfolio von Deutsche Bank")
+plot_portfolio_over_time(get_portfolio_as_timeseries("Philipps Testportfolio"), "Philipps Testportfolio")
