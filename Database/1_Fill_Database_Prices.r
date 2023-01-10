@@ -5,47 +5,47 @@ source("./Database/DataPreparation.r")
 source("./Database/DatabaseController/prices.r")
 source("./DataAnalysis/common.r")
 
+
+prepare_data <- function(isin, csv_path) {
+  # read csv data
+  data <- read.csv2(csv_path, sep = ";", header = TRUE)
+
+  # clean data
+  data <- clean_data_frame(data)
+
+  # add daily returns
+  data <- get_continuous_daily_returns(data, "close")
+
+  # add stock identifyer
+  data <- add_stock_identifyer(data, isin)
+
+  # preview data
+  print(isin)
+  tail(data)
+
+  return(data)
+}
+
 ### ----------- MAIN SCRIPT ------------------------------------------------
 
-# read csv data
-deutsche_bank_data <- read.csv2("./data/dbk.csv", sep = ";", header = TRUE)
-mercedes_benz_group_data <- read.csv2("./data/mbg.csv", sep = ";", header = TRUE)
+# create tuples containing isin and csv
+stock_data <- data.frame(
+  db <- c(DEUTSCHE_BANK_ISIN, "./data/dbk.csv"),
+  mbg <- c(MERCEDES_BENZ_GROUP_ISIN, "./data/mbg.csv")
+)
 
-# clean data
-deutsche_bank_data <- clean_data_frame(deutsche_bank_data)
-mercedes_benz_group_data <- clean_data_frame(mercedes_benz_group_data)
+for (stock in stock_data) {
+  # prepare data
+  data <- prepare_data(stock[1], stock[2])
 
-# add daily returns
-deutsche_bank_data <- get_continuous_daily_returns(deutsche_bank_data, "close")
-mercedes_benz_group_data <- get_continuous_daily_returns(mercedes_benz_group_data, "close")
+  # database connection is being established in DatabaseController/common.r
 
-# add stock identifyer
-deutsche_bank_data <- add_stock_identifyer(deutsche_bank_data, DEUTSCHE_BANK_ISIN)
-mercedes_benz_group_data <- add_stock_identifyer(mercedes_benz_group_data, MERCEDES_BENZ_GROUP_ISIN)
+  # delete existing prices
+  delete_prices(stock[1])
 
-# preview data
-print("Deutsche Bank")
-tail(deutsche_bank_data)
+  # insert data into database
+  insert_as_price(data)
 
-print("Mercedes Benz Group")
-tail(mercedes_benz_group_data)
-
-# database connection is being established in DatabaseController/common.r
-
-# clear prices if already present to prevent messed up data
-if (count_prices(DEUTSCHE_BANK_ISIN) > 0) {
-  delete_prices(DEUTSCHE_BANK_ISIN)
+  # count data
+  print(sprintf("Count of %s: %i", stock[1], count_prices(stock[2])))
 }
-insert_as_price(deutsche_bank_data)
-
-if (count_prices(MERCEDES_BENZ_GROUP_ISIN) > 0) {
-  delete_prices(MERCEDES_BENZ_GROUP_ISIN)
-}
-insert_as_price(mercedes_benz_group_data)
-
-# count data
-deutsche_bank_in_database_count <- count_prices(DEUTSCHE_BANK_ISIN)
-cat(sprintf("Deutsche Bank in database: %i", deutsche_bank_in_database_count))
-
-mercedes_benz_group_in_database_count <- count_prices(MERCEDES_BENZ_GROUP_ISIN)
-cat(sprintf("Mercedes Benz Group in database: %i", mercedes_benz_group_in_database_count))

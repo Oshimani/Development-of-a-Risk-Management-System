@@ -108,9 +108,9 @@ create_portfolio("Philipps Testportfolio")
 
 # create trades for each portfolio
 jannicks_trades <- get_random_trades_in_date_period(
-  "2021-01-01",
-  "2022-11-01",
-  50,
+  "2019-01-11",
+  "2023-01-10",
+  300,
   list_of_isins = c(DEUTSCHE_BANK_ISIN, MERCEDES_BENZ_GROUP_ISIN, MERCEDES_BENZ_GROUP_ISIN),
   list_of_trade_types = c("buy", "sell"),
   buy_factor = 1,
@@ -120,7 +120,7 @@ jannicks_trades <- get_random_trades_in_date_period(
 )
 
 liwens_trades <- get_random_trades_in_date_period(
-  "2021-01-01",
+  "2020-01-01",
   "2022-11-01",
   200,
   list_of_isins = c(DEUTSCHE_BANK_ISIN, DEUTSCHE_BANK_ISIN, MERCEDES_BENZ_GROUP_ISIN),
