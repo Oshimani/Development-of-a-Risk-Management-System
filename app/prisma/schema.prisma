@@ -21,6 +21,7 @@ model t_portfolios {
   name                  String                  @db.VarChar
   t_backtesting_results t_backtesting_results[]
   t_portfolios_stocks   t_portfolios_stocks[]   @ignore
+  t_snapshots           t_snapshots[]
   t_var_limit_results   t_var_limit_results[]
 }
 
@@ -36,22 +37,31 @@ model t_portfolios_stocks {
   @@ignore
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
 model t_prices {
-  isin         String?   @db.VarChar(16)
-  close        Decimal?  @db.Decimal
+  id           Int       @id @default(autoincrement())
+  isin         String   @db.VarChar(16)
+  close        Decimal  @db.Decimal
   dailyreturns Decimal?  @db.Decimal
-  date         DateTime? @db.Date
-  t_stocks     t_stocks? @relation(fields: [isin], references: [isin], onDelete: NoAction, onUpdate: NoAction)
+  date         DateTime @db.Date
+  t_stocks     t_stocks @relation(fields: [isin], references: [isin], onDelete: NoAction, onUpdate: NoAction)
+}
 
-  @@ignore
+model t_snapshots {
+  id           Int          @id @default(autoincrement())
+  portfolio_id Int
+  isin         String       @db.VarChar(16)
+  amount       Int
+  date         DateTime     @db.Date
+  t_stocks     t_stocks     @relation(fields: [isin], references: [isin], onDelete: NoAction, onUpdate: NoAction)
+  t_portfolios t_portfolios @relation(fields: [portfolio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model t_stocks {
   isin                String                @id @db.VarChar(16)
   name                String                @db.VarChar(255)
   t_portfolios_stocks t_portfolios_stocks[] @ignore
-  t_prices            t_prices[]            @ignore
+  t_prices            t_prices[]
+  t_snapshots         t_snapshots[]
 }
 
 model t_var_limit_results {

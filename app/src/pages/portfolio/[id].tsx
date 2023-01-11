@@ -1,13 +1,16 @@
 import { type GetServerSideProps, type NextPage } from "next"
 import Head from "next/head"
 import { prisma } from "../../server/db/client"
-import type { t_backtesting_results, t_portfolios, t_stocks, t_var_limit_results } from "@prisma/client"
+import type { t_backtesting_results, t_portfolios, t_prices, t_snapshots, t_stocks, t_var_limit_results } from "@prisma/client"
 import { Box, Card, Grid, IconButton, Stack, TextField, Typography, useTheme } from "@mui/material"
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import CloseIcon from '@mui/icons-material/Close'
+import type {
+    ChartData
+} from 'chart.js';
 import {
     Chart as ChartJS,
     LinearScale,
@@ -19,8 +22,7 @@ import {
     Tooltip,
     LineController,
     BarController,
-    ScatterController,
-    ChartData,
+    ScatterController
 } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
 
@@ -62,21 +64,47 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         date: data.date.toISOString()
     }))
 
+    // prices
+    const prices = await prisma.t_prices.findMany({})
+    const pricesFormatted = prices.map((data) => ({
+        isin: data.isin,
+        date: data.date.toISOString(),
+        close: data.close.toNumber()
+    }))
+
+    // portfolio snapshots
+    const snapshots = await prisma.t_snapshots.findMany({
+        where: {
+            portfolio_id: Number(context.query.id)
+        }
+    })
+    const snapshotsFormatted = snapshots.map((data) => ({
+        ...data,
+        date: data.date.toISOString(),
+        close: prices.find((price) => (price.isin === data.isin && price.date.toISOString() === data.date.toISOString()))?.close.toNumber()
+    }))
+
     // available stocks
     const availableStocks = await prisma.t_stocks.findMany({})
+
+
 
     return ({
         props: {
             portfolio,
             varLimit,
             backtestingData: backtestingDataFormatted,
-            availableStocks
+            snapshots: snapshotsFormatted,
+            availableStocks,
+            prices: pricesFormatted
         }
     })
 }
 
-type IVarLimitResult = Omit<t_var_limit_results, "value" & "date"> & { value: number, date: string }
+type IVarLimitResult = Omit<t_var_limit_results, "value" | "date"> & { value: number, date: string }
 type IBacktestingData = Omit<t_backtesting_results, "value" | "date"> & { value: number, date: string, dailyreturns: number }
+type IPrices = Omit<t_prices, "date" | "close" | "dailyreturns"> & { date: string, close: number }
+type ISnapshots = Omit<t_snapshots, "date"> & { date: string, close: number }
 
 ChartJS.register(
     LinearScale,
@@ -91,16 +119,23 @@ ChartJS.register(
     BarController
 );
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+    style: "currency",
+    currency: "EUR",
+})
+
 const Portfolio: NextPage<{
     portfolio: t_portfolios,
     varLimit: IVarLimitResult,
     backtestingData: IBacktestingData[],
-    availableStocks: t_stocks[]
+    snapshots: ISnapshots[],
+    availableStocks: t_stocks[],
+    prices: IPrices[]
 }> = (props) => {
 
     const theme = useTheme()
 
-    const data: ChartData = {
+    const backtestingData: ChartData = {
         labels: props.backtestingData.map((data) => new Date(data.date)),
 
         datasets: [
@@ -125,6 +160,38 @@ const Portfolio: NextPage<{
         ]
     }
 
+    const snapshotData: ChartData = {
+        labels: [...new Set(props.snapshots.map((data) => data.date))]
+            .map((date) => new Date(date)),
+
+        datasets: (props.availableStocks.map((stock) => ({
+            label: stock.name,
+            data: props.snapshots
+                .filter((data) => data.isin === stock.isin)
+                .map((data) => data.amount * data.close),
+            backgroundColor: stock.name === "Deutsche Bank" ? theme.palette.primary.main : theme.palette.secondary.main,
+        })))
+    }
+
+    const getPortfolioValue = () => {
+        if (props.snapshots.length === 0) return 0
+        const lastDate = props.snapshots[props.snapshots.length - 1]!.date
+        const value = props.snapshots
+            .filter((data) => data.date === lastDate)
+            .reduce((acc, data) => acc + data.amount * data.close, 0)
+        return value
+    }
+
+    const getLastPrice = (isin: string) => {
+        if (props.snapshots.length === 0) return 0
+        const lastDate = props.snapshots[props.snapshots.length - 1]!.date
+
+        const price = props.prices
+            .filter(price => price.date === lastDate)
+            .find((price) => price.isin === isin)
+
+        return price?.close
+    }
 
     return (
         <>
@@ -172,7 +239,7 @@ const Portfolio: NextPage<{
                                     }
                                 }
                             }
-                        }} type="line" data={data} />
+                        }} type="line" data={backtestingData} />
                     </Card>
                 </Grid>
 
@@ -189,7 +256,7 @@ const Portfolio: NextPage<{
                         {/* NAV */}
                         <Stack direction="row" spacing={1}>
                             <Typography variant="body1">NAV:</Typography>
-                            <Typography variant="body1" fontWeight={"bold"}>X.XXX.XXX,YY€</Typography>
+                            <Typography variant="body1" fontWeight={"bold"}>{currencyFormatter.format(getPortfolioValue())}</Typography>
                         </Stack>
 
                         {/* OVERSHOOTS */}
@@ -229,6 +296,45 @@ const Portfolio: NextPage<{
                     </Card>
                 </Grid>
 
+                {/* PORTFOLIO SNAPSHOTS */}
+                <Grid item xs={12}>
+                    <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
+                        <Typography sx={{
+                            borderBottom: "solid",
+                            borderBottomColor: theme.palette.primary.main,
+                            borderBottomWidth: 3,
+                            marginBottom: 2
+                        }} variant="h2">Portfolio Composition</Typography>
+
+                        {/* GRAPH */}
+                        <Chart options={{
+                            indexAxis: "x",
+                            responsive: true,
+                            interaction: {
+                                intersect: false
+                            },
+                            scales: {
+                                x: {
+                                    type: "time",
+                                    adapters: {
+                                        date: {
+                                            locale: enUS
+                                        }
+                                    },
+                                    stacked: true
+                                },
+                                y: {
+                                    stacked: true,
+                                    ticks: {
+                                        callback: (tickValue: string | number) => (currencyFormatter.format(Number(tickValue)))
+                                    }
+                                },
+
+                            }
+                        }} type="bar" data={snapshotData} />
+                    </Card>
+                </Grid>
+
                 {/* TRADE BOOKING */}
                 <Grid item xs={12}>
                     <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
@@ -241,7 +347,7 @@ const Portfolio: NextPage<{
                         <Stack direction="column" spacing={2}>
                             {props.availableStocks.map(stock => (
                                 <Stack key={stock.isin} direction="row" alignItems="center" spacing={1}>
-                                    <Typography sx={{ flexGrow: 1 }} variant="body1" title={stock.isin}>{stock.name}</Typography>
+                                    <Typography sx={{ flexGrow: 1 }} variant="body1" title={stock.isin}>{stock.name} @ {currencyFormatter.format(getLastPrice(stock.isin)!)}</Typography>
                                     <TextField sx={{}} size="small" type="number" label="Amount" variant="standard" />
                                     <DatePicker label="Date" renderInput={(params) => <TextField {...params} size="small" variant="standard" />} value={null} onChange={() => null} />
                                     <IconButton color="success" size="small">
