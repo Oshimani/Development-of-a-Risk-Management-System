@@ -1,18 +1,21 @@
+
+-- REMOVE ALL EXISTING VIEWS
+DROP VIEW IF EXISTS v_trades;
+
 -- REMOVE ALL EXISTING TABLES
-DROP TABLE IF EXISTS t_stocks;
-
-DROP TABLE IF EXISTS t_prices;
-
-DROP TABLE IF EXISTS t_portfolios;
-
-DROP TABLE IF EXISTS t_portfolios_stocks;
+DROP TABLE IF EXISTS t_snapshots;
 
 DROP TABLE IF EXISTS t_backtesting_results;
 
 DROP TABLE IF EXISTS t_var_limit_results;
 
--- REMOVE ALL EXISTING VIEWS
-DROP VIEW IF EXISTS v_trades;
+DROP TABLE IF EXISTS t_portfolios_stocks;
+
+DROP TABLE IF EXISTS t_portfolios;
+
+DROP TABLE IF EXISTS t_prices;
+
+DROP TABLE IF EXISTS t_stocks;
 
 -- CREATE TABLES
 -- CREATE TABLE STOCKS
@@ -36,10 +39,11 @@ VALUES
 
 -- CREATE TABLE PRICES
 CREATE TABLE t_prices (
-    isin VARCHAR(16),
-    close NUMERIC,
+    id SERIAL PRIMARY KEY,
+    isin VARCHAR(16) NOT NULL,
+    close NUMERIC NOT NULL,
     dailyreturns NUMERIC,
-    date DATE,
+    date DATE NOT NULL,
     FOREIGN KEY (isin) REFERENCES t_stocks(isin)
 );
 
@@ -78,10 +82,22 @@ CREATE TABLE t_var_limit_results (
     FOREIGN KEY (portfolio_id) REFERENCES t_portfolios(id) ON DELETE CASCADE
 );
 
+-- ONLY FOR APP
+-- CREATE TALBE PORTFOLIO_SNAPSHOTS
+CREATE TABLE t_snapshots (
+    id SERIAL PRIMARY KEY,
+    portfolio_id INTEGER NOT NULL,
+    isin VARCHAR(16) NOT NULL,
+    amount INTEGER NOT NULL,
+    date DATE NOT NULL,
+    FOREIGN KEY (portfolio_id) REFERENCES t_portfolios(id) ON DELETE CASCADE,
+    FOREIGN KEY (isin) REFERENCES t_stocks(isin)
+);
+
 -- CREATE VIEW TO FETCH PORTFOLIO WITH ITS STOCKS
 CREATE VIEW v_trades AS (
     SELECT
-        id,
+        t_portfolios.id AS id,
         t_portfolios.name,
         stock_isin AS isin,
         amount,
