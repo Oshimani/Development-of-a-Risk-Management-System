@@ -37,10 +37,10 @@ const MyApp: AppType = ({ Component, pageProps }) => {
                 <InsightsIcon color="primary" sx={{ fontSize: theme.typography.h1.fontSize }} />
                 <Typography sx={{ textDecoration: "none" }}
                   // color={theme.palette.common.black}
-                  variant="h1">Risky Business</Typography>
-                <Typography variant="h3"
+                  variant="h1">W@tch IT</Typography>
+                {/* <Typography variant="h3"
                   color={theme.palette.primary.main}
-                  fontWeight={theme.typography.fontWeightLight}>Riskmanagement suit</Typography>
+                  fontWeight={theme.typography.fontWeightLight}>Riskmanagement suit</Typography> */}
               </Stack>
             </Link>
           </Stack>
