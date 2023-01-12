@@ -9,6 +9,14 @@ import Link from "next/link";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const theme = createTheme({
+    palette: {
+      primary: {
+        main: "hsl(185, 83%, 41%)"
+      },
+      secondary: {
+        main: "hsl(313, 91%, 44%)"
+      }
+    },
     typography: {
       h1: {
         fontSize: "4rem"
@@ -22,6 +30,15 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       body1: {
         fontSize: "1.2rem"
       }
+    },
+    components: {
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            backgroundColor: "hsl(240, 19%, 75%)"
+          }
+        }
+      }
     }
   })
 
@@ -31,19 +48,21 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <Container>
 
           {/* HEADER */}
-          <Stack spacing={4} mb={8} direction="row" justifyContent={"center"}>
-            <Link title="Back to Home" style={{ color: "inherit", textDecoration: "none" }} href="/">
-              <Stack spacing={1} direction="column" alignItems="center">
-                <InsightsIcon color="primary" sx={{ fontSize: theme.typography.h1.fontSize }} />
-                <Typography sx={{ textDecoration: "none" }}
-                  // color={theme.palette.common.black}
-                  variant="h1">W@tch IT</Typography>
-                {/* <Typography variant="h3"
+          {Component.name === "Home" &&
+            <Stack spacing={4} mb={8} direction="row" justifyContent={"center"}>
+              <Link title="Back to Home" style={{ color: "inherit", textDecoration: "none" }} href="/">
+                <Stack spacing={1} direction="column" alignItems="center">
+                  <InsightsIcon color="primary" sx={{ fontSize: theme.typography.h1.fontSize }} />
+                  <Typography color="primary" sx={{ textDecoration: "none" }}
+                    // color={theme.palette.common.black}
+                    variant="h1">W@tch IT</Typography>
+                  {/* <Typography variant="h3"
                   color={theme.palette.primary.main}
-                  fontWeight={theme.typography.fontWeightLight}>Riskmanagement suit</Typography> */}
-              </Stack>
-            </Link>
-          </Stack>
+                fontWeight={theme.typography.fontWeightLight}>Riskmanagement suit</Typography> */}
+                </Stack>
+              </Link>
+            </Stack>
+          }
 
           {/* CONTENT */}
           <Component {...pageProps} />

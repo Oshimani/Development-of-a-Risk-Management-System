@@ -205,7 +205,7 @@ const Portfolio: NextPage<{
                 <Grid item xs={12} sx={{ display: "flex", flexDirection: "row", alignItems: "end", gap: 1 }}>
                     <div style={{ height: 60, width: 60 }}
                         dangerouslySetInnerHTML={{ __html: createAvatar(style, { seed: props.portfolio.name }) }}></div>
-                    <Typography variant="h4" flexGrow={1}>{props.portfolio.name}</Typography>
+                    <Typography color="primary" variant="h4" flexGrow={1}>{props.portfolio.name}</Typography>
 
                     {/* BACK BUTTON */}
                     <IconButton title="Back to Home" href="/">
