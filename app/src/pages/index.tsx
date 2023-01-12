@@ -21,8 +21,8 @@ const Home: NextPage<{ portfolios: t_portfolios[] }> = (props) => {
   return (
     <>
       <Head>
-        <title>Risky Business</title>
-        <meta name="description" content="Risky Business Riskmanagement Suit" />
+        <title>W@tch IT</title>
+        <meta name="description" content="W@tch IT Riskmanagement Suit" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

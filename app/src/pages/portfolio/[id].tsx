@@ -197,7 +197,7 @@ const Portfolio: NextPage<{
         <>
             <Head>
                 <title>{props.portfolio.name}</title>
-                <meta name="description" content="Risky Business Riskmanagement Suit" />
+                <meta name="description" content="W@tch IT Riskmanagement Suit" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
