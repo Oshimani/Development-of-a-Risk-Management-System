@@ -3,8 +3,6 @@ import { type AppType } from "next/dist/shared/lib/utils";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from "@mui/x-date-pickers";
 
-import logo from "../../public/watchItLogo.svg"
-
 import '../styles/global.css'
 import Link from "next/link";
 import Image from "next/image";
@@ -54,7 +52,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             <Stack spacing={4} mb={8} direction="row" justifyContent={"center"}>
               <Link title="Back to Home" style={{ color: "inherit", textDecoration: "none" }} href="/">
                 <Stack spacing={1} direction="column" alignItems="center">
-                  <Image src={logo} alt="W@tch IT" height={114} width={401} />
+                  <Image src={"/watchItLogo.svg"} alt="W@tch IT" height={114} width={401} />
                 </Stack>
               </Link>
             </Stack>
