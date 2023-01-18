@@ -1,6 +1,5 @@
-import { Container, Stack, ThemeProvider, Typography, createTheme } from "@mui/material";
+import { Container, Stack, ThemeProvider, createTheme } from "@mui/material";
 import { type AppType } from "next/dist/shared/lib/utils";
-import InsightsIcon from '@mui/icons-material/Insights';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from "@mui/x-date-pickers";
 
