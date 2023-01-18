@@ -56,6 +56,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
                   <Logo />
                 </Stack>
               </Link>
+              Can i add stuff?
             </Stack>
           }
 
