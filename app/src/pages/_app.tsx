@@ -4,8 +4,11 @@ import InsightsIcon from '@mui/icons-material/Insights';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from "@mui/x-date-pickers";
 
+import logo from "../../public/watchItLogo.svg"
+
 import '../styles/global.css'
 import Link from "next/link";
+import Image from "next/image";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const theme = createTheme({
@@ -52,13 +55,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             <Stack spacing={4} mb={8} direction="row" justifyContent={"center"}>
               <Link title="Back to Home" style={{ color: "inherit", textDecoration: "none" }} href="/">
                 <Stack spacing={1} direction="column" alignItems="center">
-                  <InsightsIcon color="primary" sx={{ fontSize: theme.typography.h1.fontSize }} />
-                  <Typography color="primary" sx={{ textDecoration: "none" }}
-                    // color={theme.palette.common.black}
-                    variant="h1">W@tch IT</Typography>
-                  {/* <Typography variant="h3"
-                  color={theme.palette.primary.main}
-                fontWeight={theme.typography.fontWeightLight}>Riskmanagement suit</Typography> */}
+                  <Image src={logo} alt="W@tch IT" height={114} width={401} />
                 </Stack>
               </Link>
             </Stack>
