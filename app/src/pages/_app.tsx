@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 import logo from "../../public/img/logo.png"
+import Logo from "../components/logo";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const theme = createTheme({
@@ -54,7 +55,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             <Stack spacing={4} mb={8} direction="row" justifyContent={"center"}>
               <Link title="Back to Home" style={{ color: "inherit", textDecoration: "none" }} href="/">
                 <Stack spacing={1} direction="column" alignItems="center">
-                  <Image loading="eager" src={logo} alt="W@tch IT" width={401} height={114} />
+                  <Logo />
                 </Stack>
               </Link>
             </Stack>
