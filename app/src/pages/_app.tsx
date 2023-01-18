@@ -5,9 +5,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 
 import '../styles/global.css'
 import Link from "next/link";
-import Image from "next/image";
 
-import logo from "../../public/img/logo.png"
 import Logo from "../components/logo";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
