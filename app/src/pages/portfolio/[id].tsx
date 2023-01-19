@@ -8,8 +8,10 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import CloseIcon from '@mui/icons-material/Close'
-import type {
-    ChartData
+import {
+    ArcElement,
+    ChartData,
+    DoughnutController
 } from 'chart.js';
 import {
     Chart as ChartJS,
@@ -22,7 +24,8 @@ import {
     Tooltip,
     LineController,
     BarController,
-    ScatterController
+    ScatterController,
+    PieController
 } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
 
@@ -116,7 +119,10 @@ ChartJS.register(
     Tooltip,
     LineController,
     ScatterController,
-    BarController
+    BarController,
+    PieController,
+    DoughnutController,
+    ArcElement
 );
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
@@ -193,6 +199,33 @@ const Portfolio: NextPage<{
         return price?.close
     }
 
+    const getCurrentComposition = (): any[] | null => {
+        if (props.snapshots.length === 0) return null
+        const lastDate = props.snapshots[props.snapshots.length - 1]!.date
+
+        const lastDateData = props.snapshots
+            .filter((data) => data.date === lastDate)
+
+        const composition = lastDateData
+            .map((data) => ({
+                name: props.availableStocks.find((stock) => stock.isin === data.isin)?.name,
+                amount: data.amount,
+                price: getLastPrice(data.isin),
+                value: data.amount * (getLastPrice(data.isin) || 0)
+            }))
+        return composition
+    }
+
+    const portfolioComposition: ChartData = {
+        labels: props.availableStocks.map((stock) => stock.name),
+
+        datasets: [{
+            label: "Portfolio Composition",
+            data: getCurrentComposition()!.map((data) => data.value)!,
+            backgroundColor: props.availableStocks.map((stock) => stock.name === "Deutsche Bank" ? theme.palette.primary.main : theme.palette.secondary.main),
+        }]
+    }
+
     return (
         <>
             <Head>
@@ -214,7 +247,7 @@ const Portfolio: NextPage<{
                 </Grid>
 
                 {/* GRAPH */}
-                <Grid item md={8}>
+                <Grid item md={8} sm={12} xs={12}>
                     <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
                         <Typography sx={{
                             borderBottom: "solid",
@@ -244,7 +277,7 @@ const Portfolio: NextPage<{
                 </Grid>
 
                 {/* LIMIT INDICATOR */}
-                <Grid item md={4}>
+                <Grid item md={4} sm={12} xs={12}>
                     <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
                         <Typography sx={{
                             borderBottom: "solid",
@@ -297,14 +330,14 @@ const Portfolio: NextPage<{
                 </Grid>
 
                 {/* PORTFOLIO SNAPSHOTS */}
-                <Grid item xs={12}>
+                <Grid item md={8} sm={12} xs={12}>
                     <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
                         <Typography sx={{
                             borderBottom: "solid",
                             borderBottomColor: theme.palette.primary.main,
                             borderBottomWidth: 3,
                             marginBottom: 2
-                        }} variant="h2">Portfolio Composition</Typography>
+                        }} variant="h2">Portfolio Value</Typography>
 
                         {/* GRAPH */}
                         <Chart options={{
@@ -332,6 +365,22 @@ const Portfolio: NextPage<{
 
                             }
                         }} type="bar" data={snapshotData} />
+                    </Card>
+                </Grid>
+
+
+                {/* CURRENT COMPOSITION */}
+                <Grid item md={4} sm={12} xs={12}>
+                    <Card sx={{ padding: 4, height: "100%", boxSizing: "border-box" }}>
+                        <Typography sx={{
+                            borderBottom: "solid",
+                            borderBottomColor: theme.palette.primary.main,
+                            borderBottomWidth: 3,
+                            marginBottom: 2
+                        }} variant="h2">Portfolio Composition</Typography>
+
+                        {/* GRAPH */}
+                        <Chart type="doughnut" options={{ responsive: true }} data={portfolioComposition} />
                     </Card>
                 </Grid>
 
